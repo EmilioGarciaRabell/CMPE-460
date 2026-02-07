@@ -1,6 +1,5 @@
-#include "oled.c"
-#inculde "switches.c"
-
+#include "../lib/lab1/switches.h"
+#include "../lib/lab4/I2C/oled.h"
 
 void part2(void);
 void part3(void);
@@ -26,7 +25,7 @@ void s_delay(void) {
 void part2(){
     char *str1 = "Hello World";
     char *str2 = "How are you?";
-    char *str3 = "Goodbye"
+    char *str3 = "Goodbye";
 
 
 	// i. initialize OLED
@@ -43,17 +42,7 @@ void part3(){
 
     int press_count = 0;
 
-    const char *thumb_up = 
-        "      _ \n"
-        "     /(|\n"
-        "    (  :\n"
-        "   __\\  \\  _____\n"
-        " (____)  `|\n"
-        "(____)|   |\n"
-        " (____).__|\n"
-        "  (___)__.|_____";
-
-    const char *heavy_thumb = 
+    char *heavy_thumb = 
         "╱╱┏╮\n"
         "╱╱┃┃\n"
         "|━╯┗━╮\n"
@@ -62,12 +51,12 @@ void part3(){
         "╱╰━━━╯";
         
 
-    const char *robot = 
+    char *robot = 
             "  [o_o] \n"
             "  /|_|\\ \n"
             "  /   \\ ";
 
-    const char *ghost = 
+    char *ghost = 
         "   .-.   \n"
         "  (o o)  \n"
         "  | O |  \n"
@@ -77,21 +66,21 @@ void part3(){
     S1_init();
     
     // i. Display an ASCII art image (image constructed from ASCII symbols)
-    print_ascii(thumb_up);
+    print_ascii(heavy_thumb);
     while(1){
         if(S1_pressed()){
             press_count ++;
         
             // ii. When SW1 is pressed, display a second ASCII art image.
             if (press_count == 1){
-                print_ascii();
+                print_ascii(robot);
             // iii. When SW1 is pressed again, display a third ASCII art image.
             }else if(press_count == 2){
-                print_ascii();
+                print_ascii(ghost);
             // iv. When SW1 is pressed a third time, display the first ASCII art image again, and continue this loop
             }else if (press_count == 3){
-                print_ascii();
-                press_count == 0;
+                print_ascii(heavy_thumb);
+                press_count = 0;
             }
             s_delay();
             
@@ -102,22 +91,22 @@ void part3(){
 void print_ascii(char *ascii){
     int row = 0;
     int col = 0;
-    while(*ascii != "\0"){
-        if (*ascii == "\n"){
+    while(*ascii != '\0'){
+        if (*ascii == '\n'){
             row ++;
             col = 0;
         }else{
             OLED_Print(row, col,ascii);
             col ++;
         }
-        ascii++
+        ascii++;
 
     }
 }
 
 
 int main(void){
-	
+	part2();
 }
 
 
