@@ -4,7 +4,10 @@
 void part2(void);
 void part3(void);
 void print_ascii(char *ascii);
-
+bool DisplayCameraData = false; 
+bool DisplayThreshCameraData = false;
+unsigned char OLED_TEXT_ARR[1024];
+unsigned char OLED_GRAPH_ARR[1024];
 
 // delay constant
 #define DELAY_COUNT 2000000
@@ -23,6 +26,7 @@ void s_delay(void) {
 
 
 void part2(){
+	
     char *str1 = "Hello World";
     char *str2 = "How are you?";
     char *str3 = "Goodbye";
@@ -30,12 +34,20 @@ void part2(){
 
 	// i. initialize OLED
 	OLED_Init();
+	OLED_display_clear();
 	// ii. Write �Hello World� on line 1, column 1
-	OLED_Print(1, 1, str1);
+	OLED_draw_line(1,1, (unsigned char *)"Hello World");
 	// iii. Write �How are you?� on line 2, column 2
-    OLED_Print(2, 2, str2);
+    //OLED_Print(2, 2, str2);
 	// iv. Write �Goodbye� on line 3, column 3
-    OLED_Print(3, 3, str1);
+    //OLED_Print(3, 3, str1);
+	while(1)
+	{
+		OLED_write_display(OLED_TEXT_ARR);
+		for (volatile int i = 0; i < 10000000; i++)
+		{
+		}
+	}
 }
 
 void part3(){
