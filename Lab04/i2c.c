@@ -1,7 +1,23 @@
+/**
+ * ******************************************************************************
+ * @file    : i2c.c
+ * @brief   : I2C driver for the OLED display
+ * @details : This file implements the I2C driver that will be called by the OLED file
+ *
+ * @author Emilio Garcia Rabell & Cristian Morataya
+ * @date 2/12/2026
+ * ******************************************************************************
+ */
+
 #include "../lib/lab4/I2C/i2c.h"
 #include <ti/devices/msp/msp.h>
 #include "../lib/sysctl.c"
 
+/**
+ * @brief Initialize I2C1
+ * @param[in] targetAddress - Passed by OLED file. I2C target/listener address
+ * @note OLED file looks for this exact prototype
+ */
 void I2C1_init(uint16_t targetAddress)
 {
 	if ((I2C1->GPRCM.PWREN & I2C_PWREN_ENABLE_MASK) == 0)
@@ -30,7 +46,7 @@ void I2C1_init(uint16_t targetAddress)
 	// Perform CLK division
 	I2C1->CLKDIV = I2C_CLKDIV_RATIO_DIV_BY_1;
 
-	// Disable analog glitch suppression, and with mask and invert the mask in order to set the corresponding bits to disable
+	// Disable analog glitch suppression AND with mask and invert the mask in order to set the corresponding bits to disable
 	I2C1->GFCTL &= ~I2C_GFCTL_AGFEN_MASK;
 
 	// Clear the control register
@@ -52,18 +68,27 @@ void I2C1_init(uint16_t targetAddress)
 	I2C1->MASTER.MCR |= I2C_MCR_ACTIVE_ENABLE;
 }
 
+/**
+ * @brief Sends a single character byte over I2C1
+ * @param[in] ch - Byte to send
+ */
 void I2C1_putchar(unsigned char ch)
 {
 	// Wait until there is space in the FIFO
-	while(!((I2C1->MASTER.MFIFOSR & I2C_MFIFOSR_TXFIFOCNT_MASK) >= I2C_MFIFOSR_TXFIFOCNT_MINIMUM));
-	
+	while (!((I2C1->MASTER.MFIFOSR & I2C_MFIFOSR_TXFIFOCNT_MASK) >= I2C_MFIFOSR_TXFIFOCNT_MINIMUM));
+
 	// Write the data to the FIFO
 	I2C1->MASTER.MTXDATA = ch;
 }
 
+/**
+ * @brief Send full character string over I2C until limit is reached
+ * @param[in] data - String pointer to data to send
+ * @param[in] data_size - Amount of bytes to transmit
+ */
 void I2C1_put(unsigned char *data, uint16_t data_size)
 {
-	
+
 	// Set where the data its going
 	I2C1->MASTER.MSA |= I2C_MSA_DIR_TRANSMIT;
 
@@ -71,7 +96,7 @@ void I2C1_put(unsigned char *data, uint16_t data_size)
 
 	// Transfer over the data
 	I2C1->MASTER.MCTR |= transactionLength | I2C_MCTR_START_ENABLE | I2C_MCTR_STOP_ENABLE | I2C_MCTR_BURSTRUN_ENABLE;
-	
+
 	// Write the data to the FIFO
 	for (int i = 0; i < data_size; i++)
 	{
@@ -80,8 +105,7 @@ void I2C1_put(unsigned char *data, uint16_t data_size)
 
 	// Wait until the transfer is done
 	while (!(I2C1->MASTER.MSR & I2C_MSR_IDLE_MASK));
-	
-	
+
 	// Disable the module after transmission
 	I2C1->MASTER.MCTR &= ~(I2C_MCTR_MBLEN_MASK | I2C_MCTR_BURSTRUN_MASK);
 }
