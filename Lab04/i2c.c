@@ -33,9 +33,6 @@ void I2C1_init(uint16_t targetAddress)
 	// Disable analog glitch suppression, and with mask and invert the mask in order to set the corresponding bits to disable
 	I2C1->GFCTL &= ~I2C_GFCTL_AGFEN_MASK;
 
-	// Disable the controller
-	//I2C1->MASTER.MCR = I2C_MCR_ACTIVE_DISABLE;
-
 	// Clear the control register
 	I2C1->MASTER.MCTR = 0;
 
@@ -58,7 +55,6 @@ void I2C1_init(uint16_t targetAddress)
 void I2C1_putchar(unsigned char ch)
 {
 	// Wait until there is space in the FIFO
-	//while (((I2C1->MASTER.MFIFOSR & I2C_MFIFOSR_TXFIFOCNT_MASK) >> I2C_MFIFOSR_TXFIFOCNT_OFS) == 0)
 	while(!((I2C1->MASTER.MFIFOSR & I2C_MFIFOSR_TXFIFOCNT_MASK) >= I2C_MFIFOSR_TXFIFOCNT_MINIMUM));
 	
 	// Write the data to the FIFO
@@ -67,12 +63,7 @@ void I2C1_putchar(unsigned char ch)
 
 void I2C1_put(unsigned char *data, uint16_t data_size)
 {
-	// Check if the data in the pointer is empty or if the size of the data is non existent
-	//if (data_size == 0)
-	//{
-		//return;
-	//}
-
+	
 	// Set where the data its going
 	I2C1->MASTER.MSA |= I2C_MSA_DIR_TRANSMIT;
 
