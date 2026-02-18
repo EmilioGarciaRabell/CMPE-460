@@ -9,7 +9,7 @@
  * ******************************************************************************
  */
 
-#include "/lab1/leds.h"
+#include <lab1/leds.h>
 #include <ti/devices/msp/msp.h>
 
 /**

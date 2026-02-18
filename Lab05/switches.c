@@ -9,7 +9,6 @@
  * ******************************************************************************
  */
 #include "lab5/switches.h"
-#include "cmsis_armclang.h"
 #include <ti/devices/msp/msp.h>
 
 /**
@@ -110,49 +109,52 @@ int S2_pressed(void)
  * @note Use NVIC_EnableIRQ() to register IRQn with the NVIC
  *       Check out `cmsis_armclang.h`
  * @hint Keep the polarity in mind
-*/
+ */
 void S1_init_interrupt(void)
 {
+	// Disable interrupts
 	__disable_irq();
+	// Initialize switch 1
 	S1_init();
 	// Clear interrupt for PA18
-	GPIOA->CPU_INT.ICLR |= GPIO_GEN_EVENT1_ICLR_DIO18_CLR;
-	
+	GPIOA->CPU_INT.ICLR |= GPIO_CPU_INT_ICLR_DIO18_CLR;
+
 	// Enable interrupt for PA18
-	GPIOA->CPU_INT.IMASK &= ~GPIO_GEN_EVENT1_IMASK_DIO18_SET;
-	
+	GPIOA->CPU_INT.IMASK |= GPIO_CPU_INT_IMASK_DIO18_SET;
+
 	// Set polarity for the interrupt
 	GPIOA->POLARITY31_16 |= GPIO_POLARITY31_16_DIO18_RISE;
-	
-	// Register interrupt with NVIC 
+
+	// Register interrupt with NVIC
 	NVIC_EnableIRQ(GPIOA_INT_IRQn);
-	
+
 	// Enable interrupts
 	__enable_irq();
-	
 }
 
 /**
  * @brief Switch 2 interrupt initialization
  * @note Use NVIC_EnableIRQ() to register IRQn with the NVIC
  *       Check out `cmsis_armclang.h`
-*/
+ */
 void S2_init_interrupt(void)
 {
-	intrinsic void __disable_irq();
+	// Disable interrupts
+	__disable_irq();
+	// Initialize switch 2
 	S2_init();
 	// Clear interrupt for PA21
-	GPIOB->CPU_INT.ICLR |= GPIO_GEN_EVENT1_ICLR_DIO21_CLR;
-	
+	GPIOB->CPU_INT.ICLR |= GPIO_CPU_INT_ICLR_DIO21_CLR;
+
 	// Enable interrupt for PA18
-	GPIOB->CPU_INT.IMASK &= ~GPIO_GEN_EVENT1_IMASK_DIO21_SET;
-	
+	GPIOB->CPU_INT.IMASK |= GPIO_CPU_INT_IMASK_DIO21_SET;
+
 	// Set polarity for the interrupt
-	GPIOB->POLARITY31_16 |= GPIO_POLARITY31_16_DIO21_LOW;
-	
-	// Register interrupt with NVIC 
+	GPIOB->POLARITY31_16 |= GPIO_POLARITY31_16_DIO21_RISE;
+
+	// Register interrupt with NVIC
 	NVIC_EnableIRQ(GPIOB_INT_IRQn);
-	
+
 	// Enable interrupts
-	intrinsic void __enable_irq();
+	__enable_irq();
 }

@@ -9,12 +9,12 @@ License Information: Cristian Morataya, RIT, LIC=----
  
 Tool Versions:
 Toolchain:       MDK-Lite  Version: 5.24.1
-Toolchain Path:  C:\Keil_v5\ARM\ARMCC\Bin
-C Compiler:      Armcc.exe V5.06 update 5 (build 528)
-Assembler:       Armasm.exe V5.06 update 5 (build 528)
-Linker/Locator:  ArmLink.exe V5.06 update 5 (build 528)
-Library Manager: ArmAr.exe V5.06 update 5 (build 528)
-Hex Converter:   FromElf.exe V5.06 update 5 (build 528)
+Toolchain Path:  C:\Keil_v5\ARM\ARMCLANG\Bin
+C Compiler:      ArmClang.exe V6.7
+Assembler:       Armasm.exe V6.7
+Linker/Locator:  ArmLink.exe V6.7
+Library Manager: ArmAr.exe V6.7
+Hex Converter:   FromElf.exe V6.7
 CPU DLL:         SARMCM3.DLL V5.24.1
 Dialog DLL:      DARMCM1.DLL V1.18.0.0
 Target DLL:      CMSIS_AGDI.dll V1.28.3.0
@@ -22,25 +22,20 @@ Dialog DLL:      TARMCM1.DLL V1.13.0.0
  
 <h2>Project:</h2>
 C:\Users\crist\IDE\cmpe460_mspm0_files-main\cmpe460_mspm0_files-main\proj\CMPE-460\Lab05\Lab05.uvprojx
-Project File Date:  02/13/2026
+Project File Date:  02/17/2026
 
 <h2>Output:</h2>
-*** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
+*** Using Compiler 'V6.7', folder: 'C:\Keil_v5\ARM\ARMCLANG\Bin'
 Rebuild target 'Target 1'
-compiling switches.c...
-C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_armclang.h(29): error:  #5: cannot open source input file "arm_compat.h": No such file or directory
-  #include <arm_compat.h>    /* Compatibility header for ARM Compiler 5 intrinsics */
-switches.c: 0 warnings, 1 error
 assembling startup_mspm0g350x_uvision.s...
+compiling switches.c...
+compiling uart.c...
 compiling main.c...
-main.c(8): warning:  #1-D: last line of file ends without a newline
-  }
-main.c: 1 warning, 0 errors
+compiling timers.c...
 compiling leds.c...
-leds.c(12): error:  #5: cannot open source input file "/lab1/leds.h": No such file or directory
-  #include "/lab1/leds.h"
-leds.c: 0 warnings, 1 error
-".\Objects\Lab05.axf" - 2 Error(s), 1 Warning(s).
+linking...
+Program Size: Code=2952 RO-data=224 RW-data=24 ZI-data=1120  
+".\Objects\Lab05.axf" - 0 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -62,8 +57,7 @@ Package Vendor: TexasInstruments
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.0.1
-Target not created.
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>
