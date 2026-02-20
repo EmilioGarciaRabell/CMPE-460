@@ -10,7 +10,7 @@ void TIMG6_IRQHandler(void);
 void TIMG12_IRQHandler(void);
 void GROUP1_IRQHandler(void);
 
-#define TIMG6_PRESCALER 255u
+#define TIMG6_PRESCALER 32
 // Final value after computing with the formula from equation 28 in the TRM
 #define TIMG6_LOAD 31249u
 
@@ -45,45 +45,47 @@ void TIMG12_IRQHandler(void)
 	// Clear the interrupt flag
 	TIMG12->CPU_INT.ICLR |= GPTIMER_CPU_INT_ICLR_Z_CLR;
 
-	// Check if LED2 is on
-	if (led2Active)
-	{
-		// Increment the time count
-		timeCount++;
+//	if (led2Active)
+//	{
+//		// Increment the time count by 1 ms (1000 ms)
+//		timeCount++;
 
-		// Check if the counter has reached .5 second/1 Hz
-		if (timeCount % 500 == 0)
-		{
-			// Toggle LED2 and change the color
-			led2Color = (led2Color + 1) % numColors;
-
-			// Switch case to change the LED color
-			switch (led2Color % numColors)
-			{
-			case 0:
-				LED2_set(RED);
-				break;
-			case 1:
-				LED2_set(GREEN);
-				break;
-			case 2:
-				LED2_set(BLUE);
-				break;
-			case 3:
-				LED2_set(CYAN);
-				break;
-			case 4:
-				LED2_set(MAGENTA);
-				break;
-			case 5:
-				LED2_set(YELLOW);
-				break;
-			case 6:
-				LED2_set(WHITE);
-				break;
-			}
-		}
-	}
+//		// Check if 500 ms has passed
+//		// if (timeCount % 500 == 0)
+//		//{
+//		// Go through the colors in order, increment the color and then use modulo to see if it needs to go back to the start
+//		led2Color = (led2Color + 1) % numColors;
+//		switch (led2Color)
+//		{
+//		case 0:
+//			LED2_set(RED);
+//			break;
+//		case 1:
+//			LED2_set(GREEN);
+//			break;
+//		case 2:
+//			LED2_set(BLUE);
+//			break;
+//		case 3:
+//			LED2_set(CYAN);
+//			break;
+//		case 4:
+//			LED2_set(MAGENTA);
+//			break;
+//		case 5:
+//			LED2_set(YELLOW);
+//			break;
+//		case 6:
+//			LED2_set(WHITE);
+//			break;
+//		}
+//		//}
+//	}
+//	else
+//	{
+//		timeCount = 0;
+//		LED2_set(NONE);
+//	}
 }
 
 // ISR for the GROUP1 interrupt this handles both switch 1 and switch 2 together
@@ -95,60 +97,40 @@ void GROUP1_IRQHandler(void)
 	// If switch 1 was pressed toggle LED1
 	if (interruptIndexGPIOA == GPIO_CPU_INT_IIDX_STAT_DIO18)
 	{
+		// Toggle the state of LED1
 		led1Active = !led1Active;
-		if(!led1Active)
+		if (!led1Active)
 		{
+			// Turn off LED1 if it is being turned off
 			LED1_set(OFF);
 		}
 	}
 	// Check the index of GPIOB to see if switch 2 was pressed
 	uint32_t interruptIndexGPIOB = GPIOB->CPU_INT.IIDX;
+
 	// If switch 2 was pressed toggle LED2
 	if (interruptIndexGPIOB == GPIO_CPU_INT_IIDX_STAT_DIO21)
 	{
-		// Check if LED2 is on
+		// Toggle the state of LED2
+		led2Active = !led2Active;
 		if (!led2Active)
 		{
-			// Toggle the state of LED2
-			led2Active = 1;
+			// Start the timer
 			timeCount = 0;
-
-			// Switch case to change the LED color
-			switch (led2Color % numColors)
-			{
-			case 0:
-				LED2_set(RED);
-				break;
-			case 1:
-				LED2_set(GREEN);
-				break;
-			case 2:
-				LED2_set(BLUE);
-				break;
-			case 3:
-				LED2_set(CYAN);
-				break;
-			case 4:
-				LED2_set(MAGENTA);
-				break;
-			case 5:
-				LED2_set(YELLOW);
-				break;
-			case 6:
-				LED2_set(WHITE);
-				break;
-			}
+			// Turn on LED2
+			//led2Active = 1;
+			// LED2_set(RED);
+			//led2Color = 0;
 		}
 		else
 		{
+			// Print out the message of the time elapsed from the first click to the second click
+			led2Color = 0;
 			led2Active = 0;
-    LED2_set(NONE);
-
-    UART0_put("Elapsed time: ");
-    UART0_printDec((int)timeCount);
-    UART0_put(" ms\r\n");
-
-    led2Color = (led2Color + 1) % numColors;
+			LED2_set(NONE);
+			UART0_put("Elapsed time: ");
+			UART0_printDec((int)timeCount);
+			UART0_put(" ms\r\n");
 		}
 	}
 }
