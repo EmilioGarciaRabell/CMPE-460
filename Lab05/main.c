@@ -4,18 +4,14 @@
 #include <lab2/uart.h>
 #include <ti/devices/msp/msp.h>
 #include <uart_extras.c>
+#include <sysctl.h>
 
 void part1(void);
 void TIMG6_IRQHandler(void);
 void TIMG12_IRQHandler(void);
 void GROUP1_IRQHandler(void);
 
-#define TIMG6_PRESCALER 32
-// Final value after computing with the formula from equation 28 in the TRM
-#define TIMG6_LOAD 31249u
-
-// Value determined after computing equation 28 from the TRM
-#define TIMG12_LOAD 31999u
+#define TIMG6_PRESCALER 32u
 
 // Variables to keep track of both LEDs and time count
 int led1Active = 0;
@@ -45,47 +41,9 @@ void TIMG12_IRQHandler(void)
 	// Clear the interrupt flag
 	TIMG12->CPU_INT.ICLR |= GPTIMER_CPU_INT_ICLR_Z_CLR;
 
-//	if (led2Active)
-//	{
-//		// Increment the time count by 1 ms (1000 ms)
-//		timeCount++;
-
-//		// Check if 500 ms has passed
-//		// if (timeCount % 500 == 0)
-//		//{
-//		// Go through the colors in order, increment the color and then use modulo to see if it needs to go back to the start
-//		led2Color = (led2Color + 1) % numColors;
-//		switch (led2Color)
-//		{
-//		case 0:
-//			LED2_set(RED);
-//			break;
-//		case 1:
-//			LED2_set(GREEN);
-//			break;
-//		case 2:
-//			LED2_set(BLUE);
-//			break;
-//		case 3:
-//			LED2_set(CYAN);
-//			break;
-//		case 4:
-//			LED2_set(MAGENTA);
-//			break;
-//		case 5:
-//			LED2_set(YELLOW);
-//			break;
-//		case 6:
-//			LED2_set(WHITE);
-//			break;
-//		}
-//		//}
-//	}
-//	else
-//	{
-//		timeCount = 0;
-//		LED2_set(NONE);
-//	}
+	// Increment time count if the LED is active
+	if (led2Active)
+		timeCount++;
 }
 
 // ISR for the GROUP1 interrupt this handles both switch 1 and switch 2 together
@@ -111,40 +69,85 @@ void GROUP1_IRQHandler(void)
 	// If switch 2 was pressed toggle LED2
 	if (interruptIndexGPIOB == GPIO_CPU_INT_IIDX_STAT_DIO21)
 	{
-		// Toggle the state of LED2
-		led2Active = !led2Active;
 		if (!led2Active)
 		{
-			// Start the timer
+			// On the first press start the timer and set the LED to the current color
 			timeCount = 0;
-			// Turn on LED2
-			//led2Active = 1;
-			// LED2_set(RED);
-			//led2Color = 0;
+			led2Active = 1;
+			switch (led2Color)
+			{
+			case 0:
+				LED2_set(RED);
+				break;
+			case 1:
+				LED2_set(GREEN);
+				break;
+			case 2:
+				LED2_set(BLUE);
+				break;
+			case 3:
+				LED2_set(CYAN);
+				break;
+			case 4:
+				LED2_set(MAGENTA);
+				break;
+			case 5:
+				LED2_set(YELLOW);
+				break;
+			case 6:
+				LED2_set(WHITE);
+				break;
+			}
 		}
 		else
 		{
-			// Print out the message of the time elapsed from the first click to the second click
-			led2Color = 0;
-			led2Active = 0;
-			LED2_set(NONE);
+			// Print the elapsed time and as soon as the button is pressed, change over to the next color and reset the timer
 			UART0_put("Elapsed time: ");
 			UART0_printDec((int)timeCount);
 			UART0_put(" ms\r\n");
+			timeCount = 0;
+			// Change to the next color in the list and set the LED to that color
+			led2Color = (led2Color + 1) % numColors;
+			switch (led2Color)
+			{
+			case 0:
+				LED2_set(RED);
+				break;
+			case 1:
+				LED2_set(GREEN);
+				break;
+			case 2:
+				LED2_set(BLUE);
+				break;
+			case 3:
+				LED2_set(CYAN);
+				break;
+			case 4:
+				LED2_set(MAGENTA);
+				break;
+			case 5:
+				LED2_set(YELLOW);
+				break;
+			case 6:
+				LED2_set(WHITE);
+				break;
+			}
 		}
 	}
 }
 
 void part1()
 {
+	uint32_t TIMG6LoadValue = (SYSCTL_SYSCLK_getULPCLK() / 8 / (TIMG6_PRESCALER + 1)) - 1;
+	uint32_t TIMG12LoadValue = (SYSCTL_SYSCLK_getULPCLK() / 1000) - 1;
 	// Initialize all the peripherals
 	UART0_init();
 	S1_init_interrupt();
 	S2_init_interrupt();
 	LED1_init();
 	LED2_init();
-	TIMG6_init(TIMG6_LOAD, TIMG6_PRESCALER);
-	TIMG12_init(TIMG12_LOAD);
+	TIMG6_init(TIMG6LoadValue, TIMG6_PRESCALER);
+	TIMG12_init(TIMG12LoadValue);
 
 	// Infinite loop to keep the program running and allow interrupts to happen
 	while (1)
