@@ -20,43 +20,43 @@ void TIMG0_init(uint32_t period, uint32_t prescaler)
 		}
 	}
 	// Select BUSCLK TODO: Verify in a later stage if this clk is the best choice (MFCLK or LFCLK)
-	TIMG0->CLKSEL |= GPTIMER_CLKSEL_BUSCLK_SEL_ENABLE;
+	TIMG0->CLKSEL = GPTIMER_CLKSEL_BUSCLK_SEL_ENABLE;
 
 	// Perform clock division
-	TIMG0->CLKDIV |= GPTIMER_CLKDIV_RATIO_DIV_BY_1;
+	TIMG0->CLKDIV = GPTIMER_CLKDIV_RATIO_DIV_BY_1;
 
-	// Set prescalers code below was our previous attempt
-	// TIMG0->COMMONREGS.CPS &= ~GPTIMER_CPS_PCNT_MASK;
+	// Set prescalers version below was our previous code
+	// TIMG6->COMMONREGS.CPS &= ~GPTIMER_CPS_PCNT_MASK;
 	TIMG0->COMMONREGS.CPS = prescaler;
 
 	// Enable TIMCLK
-	TIMG0->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_MASK;
-	
-	TIMG0->COUNTERREGS.CTRCTL &= ~GPTIMER_CTRCTL_CM_MASK;
+	//TIMG12->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_MASK;
 
-	// Configure timer for down counting mode
-	TIMG0->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_CM_DOWN;
-
-	// Enable periodic mode
-	TIMG0->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_REPEAT_MASK;
-
-	// Enable counter value
-	TIMG0->COUNTERREGS.CTRCTL &= ~GPTIMER_CTRCTL_CVAE_MASK;
-
-	// Set the LOAD to the period, pass in pcount
+	// Set the LOAD to the period
 	TIMG0->COUNTERREGS.LOAD = period;
+	
+	// Enable counter value
+	TIMG0->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_CVAE_LDVAL;
+	
+	TIMG0->COUNTERREGS.CTRCTL = GPTIMER_CTRCTL_CM_DOWN | GPTIMER_CTRCTL_REPEAT_REPEAT_1 | GPTIMER_CTRCTL_EN_DISABLED;
+	
+	
+	TIMG0->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_ENABLED;
 
 	__disable_irq();
 
-	// Disable interrupt for PA18
+	// Register interrupt with NVIC
+	NVIC_EnableIRQ(TIMG0_INT_IRQn);
+	// Clear interrupt for PA18
 	TIMG0->CPU_INT.ICLR |= GPTIMER_CPU_INT_ICLR_Z_CLR;
 
 	// Enable interrupt for PA18
 	TIMG0->CPU_INT.IMASK |= GPTIMER_CPU_INT_IMASK_Z_SET;
 
-	// Register interrupt with NVIC
-	NVIC_EnableIRQ(TIMG0_INT_IRQn);
+	
 
+	TIMG0->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_EN_ENABLED;
+	
 	// Enable interrupts
 	__enable_irq();
 }
