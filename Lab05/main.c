@@ -5,20 +5,25 @@
 #include "lab5/adc12.h"
 #include <ti/devices/msp/msp.h>
 #include <uart_extras.c>
-#define TIMG6_LOAD 31249u
-#define TIMG6_PRESCALER 32
+#include <sysctl.h>
+
+#define TIMG6_PRESCALER 32u
+
+
 void part2(void);
 void print_hexa(uint32_t dec_val);
 
 void part2()
 {
+	
+	uint32_t TIMG6LoadValue = (SYSCTL_SYSCLK_getULPCLK() / 8 / (TIMG6_PRESCALER + 1)) - 1;
 	// Initialize all the peripherals
 	UART0_init();
 	S1_init_interrupt();
 	S2_init_interrupt();
 	LED1_init();
 	LED2_init();
-	TIMG6_init(TIMG6_LOAD, TIMG6_PRESCALER);
+	TIMG6_init(TIMG6LoadValue, TIMG6_PRESCALER);
 	ADC0_init();
 
 	// Infinite loop to keep the program running and allow interrupts to happen
