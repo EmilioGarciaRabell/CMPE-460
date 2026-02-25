@@ -445,6 +445,26 @@
               <FileType>1</FileType>
               <FilePath>..\..\Lab2\uart.c</FilePath>
             </File>
+            <File>
+              <FileName>camera.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\camera.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc12.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\adc12.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_extras.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\lib\uart_extras.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_extras.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\lib\uart_extras.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
