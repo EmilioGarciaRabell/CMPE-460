@@ -458,6 +458,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\Lab02\uart.c</FilePath>
             </File>
+            <File>
+              <FileName>camera.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\camera.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
