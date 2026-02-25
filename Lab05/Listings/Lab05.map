@@ -29,7 +29,6 @@ Section Cross References
     main.o(.text.UART0_printFloat) refers to dcmp.o(i._dleq) for __aeabi_dcmple
     main.o(.ARM.exidx.text.UART0_printFloat) refers to main.o(.text.UART0_printFloat) for [Anonymous Symbol]
     main.o(.text.TIMG6_IRQHandler) refers to leds.o(.text.LED1_set) for LED1_set
-    main.o(.text.TIMG6_IRQHandler) refers to uart.o(.text.SYSCTL_SYSCLK_getULPCLK) for SYSCTL_SYSCLK_getULPCLK
     main.o(.text.TIMG6_IRQHandler) refers to main.o(.data..L_MergedGlobals) for [Anonymous Symbol]
     main.o(.ARM.exidx.text.TIMG6_IRQHandler) refers to main.o(.text.TIMG6_IRQHandler) for [Anonymous Symbol]
     main.o(.text.TIMG12_IRQHandler) refers to main.o(.data..L_MergedGlobals) for [Anonymous Symbol]
@@ -278,7 +277,7 @@ Removing Unused input sections from the image.
     Removing switches.o(.ARM.exidx.text.S1_init_interrupt), (8 bytes).
     Removing switches.o(.ARM.exidx.text.S2_init_interrupt), (8 bytes).
     Removing timers.o(.text), (0 bytes).
-    Removing timers.o(.text.TIMG0_init), (152 bytes).
+    Removing timers.o(.text.TIMG0_init), (132 bytes).
     Removing timers.o(.ARM.exidx.text.TIMG0_init), (8 bytes).
     Removing timers.o(.ARM.exidx.text.TIMG6_init), (8 bytes).
     Removing timers.o(.ARM.exidx.text.TIMG12_init), (8 bytes).
@@ -307,7 +306,7 @@ Removing Unused input sections from the image.
     Removing uart.o(.text.UART1_dataAvailable), (16 bytes).
     Removing uart.o(.ARM.exidx.text.UART1_dataAvailable), (8 bytes).
 
-53 unused section(s) (total 1300 bytes) removed from the image.
+53 unused section(s) (total 1280 bytes) removed from the image.
 
 ==============================================================================
 
@@ -494,35 +493,35 @@ Image Symbol Table
     __arm_cp.2_4                             0x00000830   Number         4  timers.o(.text.TIMG12_init)
     __arm_cp.2_5                             0x00000834   Number         4  timers.o(.text.TIMG12_init)
     [Anonymous Symbol]                       0x00000838   Section        0  main.o(.text.TIMG6_IRQHandler)
-    __arm_cp.2_0                             0x00000858   Number         4  main.o(.text.TIMG6_IRQHandler)
-    __arm_cp.2_1                             0x0000085c   Number         4  main.o(.text.TIMG6_IRQHandler)
-    [Anonymous Symbol]                       0x00000860   Section        0  timers.o(.text.TIMG6_init)
-    __arm_cp.1_0                             0x000008f0   Number         4  timers.o(.text.TIMG6_init)
-    __arm_cp.1_1                             0x000008f4   Number         4  timers.o(.text.TIMG6_init)
-    __arm_cp.1_2                             0x000008f8   Number         4  timers.o(.text.TIMG6_init)
-    __arm_cp.1_3                             0x000008fc   Number         4  timers.o(.text.TIMG6_init)
-    __arm_cp.1_4                             0x00000900   Number         4  timers.o(.text.TIMG6_init)
-    __arm_cp.1_5                             0x00000904   Number         4  timers.o(.text.TIMG6_init)
-    __arm_cp.1_6                             0x00000908   Number         4  timers.o(.text.TIMG6_init)
-    [Anonymous Symbol]                       0x0000090c   Section        0  uart.o(.text.UART0_init)
-    __arm_cp.3_0                             0x000009c4   Number         4  uart.o(.text.UART0_init)
-    __arm_cp.3_1                             0x000009c8   Number         4  uart.o(.text.UART0_init)
-    __arm_cp.3_2                             0x000009cc   Number         4  uart.o(.text.UART0_init)
-    __arm_cp.3_3                             0x000009d0   Number         4  uart.o(.text.UART0_init)
-    __arm_cp.3_4                             0x000009d4   Number         4  uart.o(.text.UART0_init)
-    __arm_cp.3_5                             0x000009d8   Number         4  uart.o(.text.UART0_init)
-    __arm_cp.3_6                             0x000009dc   Number         4  uart.o(.text.UART0_init)
-    __arm_cp.3_7                             0x000009e0   Number         4  uart.o(.text.UART0_init)
-    [Anonymous Symbol]                       0x000009e4   Section        0  main.o(.text.UART0_printDec)
-    [Anonymous Symbol]                       0x00000a2c   Section        0  uart.o(.text.UART0_put)
-    __arm_cp.6_0                             0x00000a48   Number         4  uart.o(.text.UART0_put)
-    [Anonymous Symbol]                       0x00000a4c   Section        0  main.o(.text.main)
-    [Anonymous Symbol]                       0x00000a50   Section        0  main.o(.text.part1)
-    x$fpl$fadd                               0x00000a94   Section      140  faddsub.o(x$fpl$fadd)
-    _fadd1                                   0x00000aa1   Thumb Code     0  faddsub.o(x$fpl$fadd)
-    x$fpl$fsub                               0x00000b20   Section      208  faddsub.o(x$fpl$fsub)
-    _fsub1                                   0x00000b2d   Thumb Code     0  faddsub.o(x$fpl$fsub)
-    x$fpl$usenofp                            0x00000bf0   Section        0  usenofp.o(x$fpl$usenofp)
+    __arm_cp.2_0                             0x00000854   Number         4  main.o(.text.TIMG6_IRQHandler)
+    __arm_cp.2_1                             0x00000858   Number         4  main.o(.text.TIMG6_IRQHandler)
+    [Anonymous Symbol]                       0x0000085c   Section        0  timers.o(.text.TIMG6_init)
+    __arm_cp.1_0                             0x000008ec   Number         4  timers.o(.text.TIMG6_init)
+    __arm_cp.1_1                             0x000008f0   Number         4  timers.o(.text.TIMG6_init)
+    __arm_cp.1_2                             0x000008f4   Number         4  timers.o(.text.TIMG6_init)
+    __arm_cp.1_3                             0x000008f8   Number         4  timers.o(.text.TIMG6_init)
+    __arm_cp.1_4                             0x000008fc   Number         4  timers.o(.text.TIMG6_init)
+    __arm_cp.1_5                             0x00000900   Number         4  timers.o(.text.TIMG6_init)
+    __arm_cp.1_6                             0x00000904   Number         4  timers.o(.text.TIMG6_init)
+    [Anonymous Symbol]                       0x00000908   Section        0  uart.o(.text.UART0_init)
+    __arm_cp.3_0                             0x000009c0   Number         4  uart.o(.text.UART0_init)
+    __arm_cp.3_1                             0x000009c4   Number         4  uart.o(.text.UART0_init)
+    __arm_cp.3_2                             0x000009c8   Number         4  uart.o(.text.UART0_init)
+    __arm_cp.3_3                             0x000009cc   Number         4  uart.o(.text.UART0_init)
+    __arm_cp.3_4                             0x000009d0   Number         4  uart.o(.text.UART0_init)
+    __arm_cp.3_5                             0x000009d4   Number         4  uart.o(.text.UART0_init)
+    __arm_cp.3_6                             0x000009d8   Number         4  uart.o(.text.UART0_init)
+    __arm_cp.3_7                             0x000009dc   Number         4  uart.o(.text.UART0_init)
+    [Anonymous Symbol]                       0x000009e0   Section        0  main.o(.text.UART0_printDec)
+    [Anonymous Symbol]                       0x00000a28   Section        0  uart.o(.text.UART0_put)
+    __arm_cp.6_0                             0x00000a44   Number         4  uart.o(.text.UART0_put)
+    [Anonymous Symbol]                       0x00000a48   Section        0  main.o(.text.main)
+    [Anonymous Symbol]                       0x00000a4c   Section        0  main.o(.text.part1)
+    x$fpl$fadd                               0x00000a90   Section      140  faddsub.o(x$fpl$fadd)
+    _fadd1                                   0x00000a9d   Thumb Code     0  faddsub.o(x$fpl$fadd)
+    x$fpl$fsub                               0x00000b1c   Section      208  faddsub.o(x$fpl$fsub)
+    _fsub1                                   0x00000b29   Thumb Code     0  faddsub.o(x$fpl$fsub)
+    x$fpl$usenofp                            0x00000bec   Section        0  usenofp.o(x$fpl$usenofp)
     [Anonymous Symbol]                       0x20200000   Section        0  main.o(.data..L_MergedGlobals)
     [Anonymous Symbol]                       0x20200014   Section        0  uart.o(.data.SystemMasterClock)
     SystemMasterClock                        0x20200014   Data           4  uart.o(.data.SystemMasterClock)
@@ -683,19 +682,19 @@ Image Symbol Table
     SYSCTL_SYSCLK_getULPCLK                  0x00000789   Thumb Code    28  uart.o(.text.SYSCTL_SYSCLK_getULPCLK)
     TIMG12_IRQHandler                        0x0000079d   Thumb Code    36  main.o(.text.TIMG12_IRQHandler)
     TIMG12_init                              0x000007bd   Thumb Code   128  timers.o(.text.TIMG12_init)
-    TIMG6_IRQHandler                         0x00000839   Thumb Code    40  main.o(.text.TIMG6_IRQHandler)
-    TIMG6_init                               0x00000861   Thumb Code   172  timers.o(.text.TIMG6_init)
-    UART0_init                               0x0000090d   Thumb Code   216  uart.o(.text.UART0_init)
-    UART0_printDec                           0x000009e5   Thumb Code    72  main.o(.text.UART0_printDec)
-    UART0_put                                0x00000a2d   Thumb Code    32  uart.o(.text.UART0_put)
-    main                                     0x00000a4d   Thumb Code     4  main.o(.text.main)
-    part1                                    0x00000a51   Thumb Code    68  main.o(.text.part1)
-    __aeabi_fadd                             0x00000a95   Thumb Code     0  faddsub.o(x$fpl$fadd)
-    _fadd                                    0x00000a95   Thumb Code   134  faddsub.o(x$fpl$fadd)
-    __aeabi_fsub                             0x00000b21   Thumb Code     0  faddsub.o(x$fpl$fsub)
-    _fsub                                    0x00000b21   Thumb Code   204  faddsub.o(x$fpl$fsub)
+    TIMG6_IRQHandler                         0x00000839   Thumb Code    36  main.o(.text.TIMG6_IRQHandler)
+    TIMG6_init                               0x0000085d   Thumb Code   172  timers.o(.text.TIMG6_init)
+    UART0_init                               0x00000909   Thumb Code   216  uart.o(.text.UART0_init)
+    UART0_printDec                           0x000009e1   Thumb Code    72  main.o(.text.UART0_printDec)
+    UART0_put                                0x00000a29   Thumb Code    32  uart.o(.text.UART0_put)
+    main                                     0x00000a49   Thumb Code     4  main.o(.text.main)
+    part1                                    0x00000a4d   Thumb Code    68  main.o(.text.part1)
+    __aeabi_fadd                             0x00000a91   Thumb Code     0  faddsub.o(x$fpl$fadd)
+    _fadd                                    0x00000a91   Thumb Code   134  faddsub.o(x$fpl$fadd)
+    __aeabi_fsub                             0x00000b1d   Thumb Code     0  faddsub.o(x$fpl$fsub)
+    _fsub                                    0x00000b1d   Thumb Code   204  faddsub.o(x$fpl$fsub)
+    __I$use$fp                               0x00000bec   Number         0  usenofp.o(x$fpl$usenofp)
     Region$$Table$$Base                      0x00000bf0   Number         0  anon$$obj.o(Region$$Table)
-    __I$use$fp                               0x00000bf0   Number         0  usenofp.o(x$fpl$usenofp)
     Region$$Table$$Limit                     0x00000c10   Number         0  anon$$obj.o(Region$$Table)
     led1Active                               0x20200000   Data           4  main.o(.data..L_MergedGlobals)
     led2Active                               0x20200004   Data           4  main.o(.data..L_MergedGlobals)
@@ -793,16 +792,17 @@ Memory Map of the image
     0x00000788   0x00000788   0x00000014   Code   RO          101    .text.SYSCTL_SYSCLK_getULPCLK  uart.o
     0x0000079c   0x0000079c   0x00000020   Code   RO           17    .text.TIMG12_IRQHandler  main.o
     0x000007bc   0x000007bc   0x0000007c   Code   RO           84    .text.TIMG12_init   timers.o
-    0x00000838   0x00000838   0x00000028   Code   RO           15    .text.TIMG6_IRQHandler  main.o
-    0x00000860   0x00000860   0x000000ac   Code   RO           82    .text.TIMG6_init    timers.o
-    0x0000090c   0x0000090c   0x000000d8   Code   RO          103    .text.UART0_init    uart.o
-    0x000009e4   0x000009e4   0x00000048   Code   RO           11    .text.UART0_printDec  main.o
-    0x00000a2c   0x00000a2c   0x00000020   Code   RO          109    .text.UART0_put     uart.o
-    0x00000a4c   0x00000a4c   0x00000004   Code   RO           23    .text.main          main.o
-    0x00000a50   0x00000a50   0x00000044   Code   RO           21    .text.part1         main.o
-    0x00000a94   0x00000a94   0x0000008c   Code   RO          164    x$fpl$fadd          fz_ps.l(faddsub.o)
-    0x00000b20   0x00000b20   0x000000d0   Code   RO          166    x$fpl$fsub          fz_ps.l(faddsub.o)
-    0x00000bf0   0x00000bf0   0x00000000   Code   RO          187    x$fpl$usenofp       fz_ps.l(usenofp.o)
+    0x00000838   0x00000838   0x00000024   Code   RO           15    .text.TIMG6_IRQHandler  main.o
+    0x0000085c   0x0000085c   0x000000ac   Code   RO           82    .text.TIMG6_init    timers.o
+    0x00000908   0x00000908   0x000000d8   Code   RO          103    .text.UART0_init    uart.o
+    0x000009e0   0x000009e0   0x00000048   Code   RO           11    .text.UART0_printDec  main.o
+    0x00000a28   0x00000a28   0x00000020   Code   RO          109    .text.UART0_put     uart.o
+    0x00000a48   0x00000a48   0x00000004   Code   RO           23    .text.main          main.o
+    0x00000a4c   0x00000a4c   0x00000044   Code   RO           21    .text.part1         main.o
+    0x00000a90   0x00000a90   0x0000008c   Code   RO          164    x$fpl$fadd          fz_ps.l(faddsub.o)
+    0x00000b1c   0x00000b1c   0x000000d0   Code   RO          166    x$fpl$fsub          fz_ps.l(faddsub.o)
+    0x00000bec   0x00000bec   0x00000000   Code   RO          187    x$fpl$usenofp       fz_ps.l(usenofp.o)
+    0x00000bec   0x00000bec   0x00000004   PAD
     0x00000bf0   0x00000bf0   0x00000020   Data   RO          362    Region$$Table       anon$$obj.o
 
 
@@ -841,14 +841,14 @@ Image component sizes
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
        360         32          0          0          0       5896   leds.o
-       420         64          0         20          0       7715   main.o
+       416         64          0         20          0       7712   main.o
         48         22        192          0       1024        832   startup_mspm0g350x_uvision.o
        280         32          0          0          0       7192   switches.o
-       296         52          0          0          0       5666   timers.o
+       296         52          0          0          0       5663   timers.o
        268         36          0          4          0       9387   uart.o
 
     ----------------------------------------------------------------------
-      1672        238        224         24       1024      36688   Object Totals
+      1668        238        224         24       1024      36682   Object Totals
          0          0         32          0          0          0   (incl. Generated)
          0          0          0          0          0          0   (incl. Padding)
 
@@ -884,8 +884,8 @@ Image component sizes
          0          0          0          0          0          0   usenofp.o
 
     ----------------------------------------------------------------------
-      1192         28          0          0         96       1020   Library Totals
-        14          4          0          0          0          0   (incl. Padding)
+      1196         28          0          0         96       1020   Library Totals
+        18          4          0          0          0          0   (incl. Padding)
 
     ----------------------------------------------------------------------
 
@@ -895,7 +895,7 @@ Image component sizes
        566          8          0          0          0        380   fz_ps.l
 
     ----------------------------------------------------------------------
-      1192         28          0          0         96       1020   Library Totals
+      1196         28          0          0         96       1020   Library Totals
 
     ----------------------------------------------------------------------
 
@@ -904,8 +904,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-      2864        266        224         24       1120      37264   Grand Totals
-      2864        266        224         24       1120      37264   ELF Image Totals
+      2864        266        224         24       1120      37258   Grand Totals
+      2864        266        224         24       1120      37258   ELF Image Totals
       2864        266        224         24          0          0   ROM Totals
 
 ==============================================================================
