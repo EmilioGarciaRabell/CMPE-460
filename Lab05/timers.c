@@ -178,4 +178,8 @@ void TIMG12_init(uint32_t period)
 	
 	// Enable interrupts
 	__enable_irq();
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1f5a30e2f0a88f3e10e1e43740e1e413a2e9ea12

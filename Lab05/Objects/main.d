@@ -1,6 +1,6 @@
-./objects/main.o: main.c ../../../lib\lab1/leds.h \
-  ../../../lib\lab5/switches.h ../../../lib\lab5/timers.h \
+./objects/main.o: main.c ..\..\..\lib\lab5\camera.h \
   C:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdint.h \
+<<<<<<< HEAD
   ../../../lib\lab2/uart.h ../../../source\ti/devices/msp/msp.h \
   ../../../source\ti/devices/DeviceFamily.h \
   ../../../source\ti/devices/msp/m0p/mspm0g350x.h \
@@ -37,3 +37,7 @@
   ../../../source\ti/devices/msp/peripherals/m0p/sysctl/hw_sysctl_mspm0g1x0x_g3x0x.h \
   ../../../lib\uart_extras.c ../../../lib/uart_extras.h \
   ../../../lib\sysctl.h
+=======
+  ..\..\..\lib\lab2\uart.h ..\..\..\lib\uart_extras.h \
+  ..\..\..\lib\uart_extras.c ..\..\..\lib\uart_extras.h
+>>>>>>> 1f5a30e2f0a88f3e10e1e43740e1e413a2e9ea12

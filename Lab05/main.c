@@ -1,9 +1,8 @@
-#include "lab1/leds.h"
-#include "lab5/switches.h"
-#include "lab5/timers.h"
-#include <lab2/uart.h>
-#include <ti/devices/msp/msp.h>
+#include "lab5/camera.h"
+#include "lab2/uart.h"
+#include "uart_extras.h"
 #include <uart_extras.c>
+<<<<<<< HEAD
 #include <sysctl.h>
 
 void part1(void);
@@ -155,7 +154,27 @@ void part1()
 	}
 }
 
+=======
+>>>>>>> 1f5a30e2f0a88f3e10e1e43740e1e413a2e9ea12
 int main(void)
 {
-	part1();
+	UART0_init();
+	Camera_init();
+	while(1)
+	{
+		if(Camera_isDataReady())
+		{
+			uint16_t *incomingData = Camera_getData();
+			
+			UART0_put("-1\r\n");
+			
+			for(int i = 0; i<128; i++)
+			{
+				UART0_printDec(incomingData[i]);
+				UART0_put("\r\n");
+			}
+			UART0_put("-2\r\n");
+
+		}
+	}
 }
