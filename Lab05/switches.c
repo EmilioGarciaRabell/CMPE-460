@@ -2,10 +2,10 @@
  * ******************************************************************************
  * @file    : switches.c
  * @brief   : Switches module file
- * @details : Switches initialization and interaction
+ * @details : Switches initialization and interaction (with interrupts as of 2/26/2026)
  *
  * @author Cristian Morataya
- * @date 1/21/2026
+ * @date 2/26/2026
  * ******************************************************************************
  */
 #include "lab5/switches.h"

@@ -1,3 +1,14 @@
+/**
+ * ******************************************************************************
+ * @file    : timers.c
+ * @brief   : Timers module file
+ * @details : Timers initialization and configuration
+ *
+ * @author Cristian Morataya & Emilio Garcia Rabell
+ * @date 2/26/2026
+ * ******************************************************************************
+ */
+
 #include <lab5/timers.h>
 #include <ti/devices/msp/msp.h>
 
@@ -7,6 +18,7 @@
  */
 void TIMG0_init(uint32_t period, uint32_t prescaler)
 {
+	// Check if the timer is already powered on
 	if ((TIMG0->GPRCM.PWREN & GPTIMER_PWREN_ENABLE_MASK) == 0)
 	{
 		// Force it to reset
@@ -19,7 +31,7 @@ void TIMG0_init(uint32_t period, uint32_t prescaler)
 		{
 		}
 	}
-	// Select BUSCLK TODO: Verify in a later stage if this clk is the best choice (MFCLK or LFCLK)
+	// Select BUSCLK
 	TIMG0->CLKSEL = GPTIMER_CLKSEL_BUSCLK_SEL_ENABLE;
 
 	// Perform clock division
@@ -29,20 +41,19 @@ void TIMG0_init(uint32_t period, uint32_t prescaler)
 	// TIMG6->COMMONREGS.CPS &= ~GPTIMER_CPS_PCNT_MASK;
 	TIMG0->COMMONREGS.CPS = prescaler;
 
-	// Enable TIMCLK
-	//TIMG12->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_MASK;
-
 	// Set the LOAD to the period
 	TIMG0->COUNTERREGS.LOAD = period;
-	
+
 	// Enable counter value
 	TIMG0->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_CVAE_LDVAL;
-	
+
+	// Make the counter count down, repeat and also disable it
 	TIMG0->COUNTERREGS.CTRCTL = GPTIMER_CTRCTL_CM_DOWN | GPTIMER_CTRCTL_REPEAT_REPEAT_1 | GPTIMER_CTRCTL_EN_DISABLED;
-	
-	
+
+	// Enable TIMCLK
 	TIMG0->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_ENABLED;
 
+	// Disable interrupts
 	__disable_irq();
 
 	// Register interrupt with NVIC
@@ -53,10 +64,9 @@ void TIMG0_init(uint32_t period, uint32_t prescaler)
 	// Enable interrupt for PA18
 	TIMG0->CPU_INT.IMASK |= GPTIMER_CPU_INT_IMASK_Z_SET;
 
-	
-
+	// Enable the timer
 	TIMG0->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_EN_ENABLED;
-	
+
 	// Enable interrupts
 	__enable_irq();
 }
@@ -66,7 +76,8 @@ void TIMG0_init(uint32_t period, uint32_t prescaler)
  */
 void TIMG6_init(uint32_t period, uint32_t prescaler)
 {
-if ((TIMG6->GPRCM.PWREN & GPTIMER_PWREN_ENABLE_MASK) == 0)
+	// Check if the timer is already powered on
+	if ((TIMG6->GPRCM.PWREN & GPTIMER_PWREN_ENABLE_MASK) == 0)
 	{
 		// Force it to reset
 		TIMG6->GPRCM.RSTCTL = GPTIMER_RSTCTL_KEY_UNLOCK_W | GPTIMER_RSTCTL_RESETASSERT_ASSERT;
@@ -88,20 +99,19 @@ if ((TIMG6->GPRCM.PWREN & GPTIMER_PWREN_ENABLE_MASK) == 0)
 	// TIMG6->COMMONREGS.CPS &= ~GPTIMER_CPS_PCNT_MASK;
 	TIMG6->COMMONREGS.CPS = prescaler;
 
-	// Enable TIMCLK
-	//TIMG12->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_MASK;
-
 	// Set the LOAD to the period
 	TIMG6->COUNTERREGS.LOAD = period;
-	
+
 	// Enable counter value
 	TIMG6->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_CVAE_LDVAL;
-	
+
+	// Make the counter count down, repeat and also disable it
 	TIMG6->COUNTERREGS.CTRCTL = GPTIMER_CTRCTL_CM_DOWN | GPTIMER_CTRCTL_REPEAT_REPEAT_1 | GPTIMER_CTRCTL_EN_DISABLED;
-	
-	
+
+	// Enable TIMCLK
 	TIMG6->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_ENABLED;
 
+	// Disable interrupts
 	__disable_irq();
 
 	// Register interrupt with NVIC
@@ -112,10 +122,9 @@ if ((TIMG6->GPRCM.PWREN & GPTIMER_PWREN_ENABLE_MASK) == 0)
 	// Enable interrupt for PA18
 	TIMG6->CPU_INT.IMASK |= GPTIMER_CPU_INT_IMASK_Z_SET;
 
-	
-
+	// Enable the timer
 	TIMG6->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_EN_ENABLED;
-	
+
 	// Enable interrupts
 	__enable_irq();
 }
@@ -126,6 +135,7 @@ if ((TIMG6->GPRCM.PWREN & GPTIMER_PWREN_ENABLE_MASK) == 0)
  */
 void TIMG12_init(uint32_t period)
 {
+	// Check if the timer is already powered on
 	if ((TIMG12->GPRCM.PWREN & GPTIMER_PWREN_ENABLE_MASK) == 0)
 	{
 		// Force it to reset
@@ -146,22 +156,21 @@ void TIMG12_init(uint32_t period)
 
 	// Set prescalers version below was our previous code
 	// TIMG6->COMMONREGS.CPS &= ~GPTIMER_CPS_PCNT_MASK;
-	//TIMG12->COMMONREGS.CPS = prescaler;
-
-	// Enable TIMCLK
-	//TIMG12->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_MASK;
+	// TIMG12->COMMONREGS.CPS = prescaler;
 
 	// Set the LOAD to the period
 	TIMG12->COUNTERREGS.LOAD = period;
-	
+
 	// Enable counter value
 	TIMG12->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_CVAE_LDVAL;
-	
+
+	// Make the counter count down, repeat and also disable it
 	TIMG12->COUNTERREGS.CTRCTL = GPTIMER_CTRCTL_CM_DOWN | GPTIMER_CTRCTL_REPEAT_REPEAT_1 | GPTIMER_CTRCTL_EN_DISABLED;
-	
-	
+
+	// Enable TIMCLK
 	TIMG12->COMMONREGS.CCLKCTL |= GPTIMER_CCLKCTL_CLKEN_ENABLED;
 
+	// Disable interrupts
 	__disable_irq();
 
 	// Register interrupt with NVIC
@@ -172,10 +181,9 @@ void TIMG12_init(uint32_t period)
 	// Enable interrupt for PA18
 	TIMG12->CPU_INT.IMASK |= GPTIMER_CPU_INT_IMASK_Z_SET;
 
-	
-
+	// Enable the timer
 	TIMG12->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_EN_ENABLED;
-	
+
 	// Enable interrupts
 	__enable_irq();
 }
