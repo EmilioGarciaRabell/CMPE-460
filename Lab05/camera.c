@@ -67,32 +67,32 @@ void Camera_clearDataReady() {
     cameraDataFlag = 0;
 }
 
-void TIMG6_IRQHandler()
-{
-// Clear the interrupt flag
-	//TIMG6->CPU_INT.ICLR |= GPTIMER_CPU_INT_ICLR_Z_CLR;
-	
-	// Turn off TIMG0 like the manual says
-	TIMG6->COUNTERREGS.CTRCTL &= ~(0x01);
-	cameraDataFlag = 0;
-	
-	// Make SI low
-	GPIOA->DOUTCLR31_0 = (1 << 28);
-	// Set the clock low
-	GPIOA->DOUTCLR31_0 = (1 << 12);
-	
-	// Set SI high
-	GPIOA->DOUTSET31_0 = (1<<28);
-	// Set the clock high
-	GPIOA->DOUTSET31_0 = (1<<12);
-	
-	
-	// reenable TIMG0
-	TIMG0->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_EN_ENABLED;
+//void TIMG6_IRQHandler()
+//{
+//// Clear the interrupt flag
+//	//TIMG6->CPU_INT.ICLR |= GPTIMER_CPU_INT_ICLR_Z_CLR;
+//	
+//	// Turn off TIMG0 like the manual says
+//	TIMG6->COUNTERREGS.CTRCTL &= ~(0x01);
+//	cameraDataFlag = 0;
+//	
+//	// Make SI low
+//	GPIOA->DOUTCLR31_0 = (1 << 28);
+//	// Set the clock low
+//	GPIOA->DOUTCLR31_0 = (1 << 12);
+//	
+//	// Set SI high
+//	GPIOA->DOUTSET31_0 = (1<<28);
+//	// Set the clock high
+//	GPIOA->DOUTSET31_0 = (1<<12);
+//	
+//	
+//	// reenable TIMG0
+//	TIMG0->COUNTERREGS.CTRCTL |= GPTIMER_CTRCTL_EN_ENABLED;
 
-	
-	
-}
+//	
+//	
+//}
 
 void TIMG0_IRQHandler()
 {
