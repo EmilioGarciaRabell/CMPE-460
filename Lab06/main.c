@@ -4,6 +4,7 @@
 
 void part1A(void);
 void part1B(void);
+void part2(void);
 int count_op(int count, int op);
 
 static void delay_10ms(void)
@@ -84,7 +85,47 @@ void part1B()
     }
 }
 
+void part2()
+{
+    GPIOB->GPRCM.RSTCTL = GPIO_RSTCTL_KEY_UNLOCK_W | GPIO_RSTCTL_RESETASSERT_ASSERT;
+    GPIOB->GPRCM.PWREN  = GPIO_PWREN_KEY_UNLOCK_W  | GPIO_PWREN_ENABLE_ENABLE;
+    for (volatile int i = 0; i < 10; i++) {}
+
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM12] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM12_PF_GPIOB_DIO00;
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM23] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM23_PF_GPIOB_DIO06;
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM24] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM24_PF_GPIOB_DIO07;
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM33] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM33_PF_GPIOB_DIO16;
+
+    GPIOB->DOESET31_0 = (1 << 0) | (1 << 6) | (1 << 7) | (1 << 16);
+
+    GPIOB->DOUTCLR31_0 = (1 << 0) | (1 << 6) | (1 << 7) | (1 << 16);
+
+    int forward = 1;
+    int phase = 0;
+
+    while (1)
+    {
+        GPIOB->DOUTCLR31_0 = (1 << 0) | (1 << 6) | (1 << 7) | (1 << 16);
+
+        if (forward)
+        {
+            if      (phase == 0) { GPIOB->DOUTSET31_0 = (1 << 6);  phase++; }
+            else if (phase == 1) { GPIOB->DOUTSET31_0 = (1 << 7);  phase++; }
+            else if (phase == 2) { GPIOB->DOUTSET31_0 = (1 << 0);  phase++; }
+            else                 { GPIOB->DOUTSET31_0 = (1 << 16); phase=0; }
+        }
+        else
+        {
+            if      (phase == 0) { GPIOB->DOUTSET31_0 = (1 << 16); phase++; }
+            else if (phase == 1) { GPIOB->DOUTSET31_0 = (1 << 0);  phase++; }
+            else if (phase == 2) { GPIOB->DOUTSET31_0 = (1 << 7);  phase++; }
+            else                 { GPIOB->DOUTSET31_0 = (1 << 6);  phase=0; }
+        }
+
+        delay_10ms();
+    }
+}
 int main(void)
 {
-	part1B();
+	part2();
 }
