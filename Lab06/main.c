@@ -9,25 +9,27 @@ int count_op(int count, int op);
 
 static void delay_10ms(void)
 {
-	for (volatile long i = 0; i < 320000; i++)
-	{
-	}
+    for (volatile long i = 0; i < 100000; i++)
+    {
+    }
 }
 
 void part1A()
 {
-	// Calculate the load value
-	uint32_t TIMA0LoadValue = (SYSCTL_SYSCLK_getMCLK() / (0 + 1) / 10000) - 1;
+    // Calculate the load value
+    uint32_t TIMA0LoadValue = (SYSCTL_SYSCLK_getMCLK() / (0 + 1) / 10000) - 1;
 
-	TIMA0_PWM_init(0, TIMA0LoadValue, 0, 80.0);
+    TIMA0_PWM_init(0, TIMA0LoadValue, 0, 80.0);
 
-	while (1)
-	{
-	}
+    while (1)
+    {
+    }
 }
 
-int count_op(int count, int op){
-    if(op){
+int count_op(int count, int op)
+{
+    if (op)
+    {
         return ++count;
     }
     return --count;
@@ -35,18 +37,18 @@ int count_op(int count, int op){
 
 void part1B()
 {
-	// Calculate the load value
-	uint32_t TIMA0LoadValue = (SYSCTL_SYSCLK_getMCLK() / (0 + 1) / 10000) - 1;
+    // Calculate the load value
+    uint32_t TIMA0LoadValue = (SYSCTL_SYSCLK_getMCLK() / (0 + 1) / 10000) - 1;
 
-	TIMA0_PWM_init(0, TIMA0LoadValue, 0, 0.0);
-  TIMA0_PWM_init(1, TIMA0LoadValue, 0, 0.0);
+    TIMA0_PWM_init(0, TIMA0LoadValue, 0, 0.0);
+    TIMA0_PWM_init(1, TIMA0LoadValue, 0, 0.0);
     int opl = 1;
-		int opr = 0;
+    int opr = 0;
     int countl = 0;
-		int countr = 100;
+    int countr = 100;
     int forward = 1;
-	
-	while (1)
+
+    while (1)
     {
         if (forward)
         {
@@ -61,8 +63,8 @@ void part1B()
 
         delay_10ms();
         countl = count_op(countl, opl);
-				countr = count_op(countr, opr);
-				
+        countr = count_op(countr, opr);
+
         if (countr >= 100 || countr < 0)
         {
             opr = !opr;
@@ -72,8 +74,8 @@ void part1B()
                 forward = !forward;
             }
         }
-				
-				if (countl >= 100 || countl < 0)
+
+        if (countl >= 100 || countl < 0)
         {
             opl = !opl;
             countl = count_op(countl, opl);
@@ -81,15 +83,17 @@ void part1B()
             {
                 forward = !forward;
             }
-        }		
+        }
     }
 }
 
 void part2()
 {
     GPIOB->GPRCM.RSTCTL = GPIO_RSTCTL_KEY_UNLOCK_W | GPIO_RSTCTL_RESETASSERT_ASSERT;
-    GPIOB->GPRCM.PWREN  = GPIO_PWREN_KEY_UNLOCK_W  | GPIO_PWREN_ENABLE_ENABLE;
-    for (volatile int i = 0; i < 10; i++) {}
+    GPIOB->GPRCM.PWREN = GPIO_PWREN_KEY_UNLOCK_W | GPIO_PWREN_ENABLE_ENABLE;
+    for (volatile int i = 0; i < 10; i++)
+    {
+    }
 
     IOMUX->SECCFG.PINCM[IOMUX_PINCM12] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM12_PF_GPIOB_DIO00;
     IOMUX->SECCFG.PINCM[IOMUX_PINCM23] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM23_PF_GPIOB_DIO06;
@@ -109,17 +113,49 @@ void part2()
 
         if (forward)
         {
-            if      (phase == 0) { GPIOB->DOUTSET31_0 = (1 << 6);  phase++; }
-            else if (phase == 1) { GPIOB->DOUTSET31_0 = (1 << 7);  phase++; }
-            else if (phase == 2) { GPIOB->DOUTSET31_0 = (1 << 0);  phase++; }
-            else                 { GPIOB->DOUTSET31_0 = (1 << 16); phase=0; }
+            if (phase == 0)
+            {
+                GPIOB->DOUTSET31_0 = (1 << 6);
+                phase++;
+            }
+            else if (phase == 1)
+            {
+                GPIOB->DOUTSET31_0 = (1 << 7);
+                phase++;
+            }
+            else if (phase == 2)
+            {
+                GPIOB->DOUTSET31_0 = (1 << 0);
+                phase++;
+            }
+            else
+            {
+                GPIOB->DOUTSET31_0 = (1 << 16);
+                phase = 0;
+            }
         }
         else
         {
-            if      (phase == 0) { GPIOB->DOUTSET31_0 = (1 << 16); phase++; }
-            else if (phase == 1) { GPIOB->DOUTSET31_0 = (1 << 0);  phase++; }
-            else if (phase == 2) { GPIOB->DOUTSET31_0 = (1 << 7);  phase++; }
-            else                 { GPIOB->DOUTSET31_0 = (1 << 6);  phase=0; }
+            if (phase == 0)
+            {
+                GPIOB->DOUTSET31_0 = (1 << 16);
+                phase++;
+            }
+            else if (phase == 1)
+            {
+                GPIOB->DOUTSET31_0 = (1 << 0);
+                phase++;
+            }
+            else if (phase == 2)
+            {
+                GPIOB->DOUTSET31_0 = (1 << 7);
+                phase++;
+            }
+            else
+            {
+                GPIOB->DOUTSET31_0 = (1 << 6);
+                phase = 0;
+            }
         }
 
         delay_10ms();
@@ -127,5 +163,5 @@ void part2()
 }
 int main(void)
 {
-	part2();
+    part2();
 }
