@@ -456,6 +456,7 @@ void TIMA0_PWM_DutyCycle(uint8_t pin, double percentDutyCycle)
 	// calculate count value
 	uint32_t ccValue = (uint32_t)((percentDutyCycle / 100.0) * loadValue);
 
+	// Check what channel it is and assign the count value
 	if (pin < 2)
 	{
 		TIMA0->COUNTERREGS.CC_01[pin % 2] = ccValue;
@@ -473,11 +474,12 @@ void TIMA0_PWM_DutyCycle(uint8_t pin, double percentDutyCycle)
  */
 void TIMA1_PWM_DutyCycle(uint8_t pin, double percentDutyCycle)
 {
-	uint32_t loadValue = TIMA0->COUNTERREGS.LOAD;
+	uint32_t loadValue = TIMA1->COUNTERREGS.LOAD;
 
 	// calculate count value
 	uint32_t ccValue = (uint32_t)((percentDutyCycle / 100.0) * loadValue);
 
+	// Check what channel it is and assign the count value
 	if (pin < 2)
 	{
 		TIMA1->COUNTERREGS.CC_01[pin % 2] = ccValue;
