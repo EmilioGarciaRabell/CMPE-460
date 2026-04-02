@@ -1,0 +1,20 @@
+# Keil build output
+*.axf
+*.d
+*.dep
+*.htm
+*.lnp
+*.lst
+*.map
+*.o
+*.sct
+*.uvguix.*
+*.uvoptx
+*.bak
+
+# Keil generated folders
+Objects/
+Listings/
+RTE/
+
+# Only keep source files
