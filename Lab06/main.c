@@ -241,13 +241,14 @@ void part3()
     }
 }
 
+// Part 4 function for control of both the motor and the servo at the same time
 void part4()
 {
     // Load value for TIMA0, should be 10 kHz
     uint32_t TIMA0LoadValue = (SYSCTL_SYSCLK_getMCLK() / (0 + 1) / 10000) - 1;
     // Channel 0 initialization with 30% duty cycle
     TIMA0_PWM_init(0, TIMA0LoadValue, 0, 70.0);
-    
+
     // Load value for TIMA1, should be 50 Hz
     uint32_t TIMA1LoadValue = (SYSCTL_SYSCLK_getMCLK() / (9 + 1) / 50) - 1;
     // Initialize the PWM for the servo
