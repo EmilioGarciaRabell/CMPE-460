@@ -13,7 +13,7 @@
 #include "lab5/adc12.h"
 #include "lab5/timers.h"
 #include <ti/devices/msp/msp.h>
-#include <sysctl.h>
+#include <sysctl.c>
 #include "lab2/uart.h"
 
 // Linear array of 128 photodiodes from the pdf
@@ -46,9 +46,9 @@ void Camera_init()
 		}
 	}
 
-	// Configure SI (PA28_ - PINCM3
+	// Configure SI (PA28 - PINCM3)
 	IOMUX->SECCFG.PINCM[IOMUX_PINCM3] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM3_PF_GPIOA_DIO28;
-	// Configure CLK (PA12 - PINCM34
+	// Configure CLK (PA12 - PINCM34)
 	IOMUX->SECCFG.PINCM[IOMUX_PINCM34] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM34_PF_GPIOA_DIO12;
 
 	// Enable outputs in the GPIO module
