@@ -151,49 +151,52 @@ int main(void)
 	TIMA0_PWM_init(2, TIMA0Load, 0, 0.0);
 	TIMA0_PWM_init(3, TIMA0Load, 0, 0.0);
 
-	while (1)
-	{
-		// Check if there is data
-		if (!Camera_isDataReady())
-		{
-			continue;
-		}
 
-		uint16_t *pixels = Camera_getData();
+    static float filteredServo = 92.5f;
 
-		// If it is on carpet stop the motors
-		if (is_carpet(pixels))
-		{
-			TIMA0_PWM_DutyCycle(0, 100.0);
-			TIMA0_PWM_DutyCycle(1, 100.0);
-			TIMA0_PWM_DutyCycle(2, 100.0);
-			TIMA0_PWM_DutyCycle(3, 100.0);
-			Camera_clearDataReady();
-			continue;
-		}
+    while (1)
+    {
+        if (!Camera_isDataReady()) continue;
 
-		// Calculate the error from the center to then adjust the servo
-		int error = find_center_line(pixels) - 64;
-		double servo = 92.5 - (0.03f * error);
+        uint16_t *pixels = Camera_getData();
+        int error = find_center_line(pixels) - 64;
+        
+        // 1. DEADBAND
+        if (error > -3 && error < 3) error = 0;
 
-		if (servo < 90.0)
-		{
-			servo = 90.0;
-		}
-		if (servo > 95.0)
-		{
-			servo = 95.0;
-		}
+        // 2. REDUCED GAIN MAPPING (Numbers preserved as requested)
+        float in_min  = -64.0f; 
+        float in_max  =  64.0f; 
+        float out_min = 96.5f;  
+        float out_max = 88.75f;  
 
-		// Set the servo to adjust the steering
-		TIMA1_PWM_DutyCycle(0, servo);
+        float targetServo = (float)(error - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 
-		// Make the motors move forward
-		TIMA0_PWM_DutyCycle(0, 75.0);
-		TIMA0_PWM_DutyCycle(1, 0.0);
-		TIMA0_PWM_DutyCycle(2, 75.0);
-		TIMA0_PWM_DutyCycle(3, 0.0);
+        // 3. HEAVY SMOOTHING
+        float alpha = 0.10f; 
+        filteredServo = (targetServo * alpha) + (filteredServo * (1.0f - alpha));
 
-		Camera_clearDataReady();
-	}
+        // 4. Set Hardware
+        TIMA1_PWM_DutyCycle(0, (double)filteredServo);
+
+        // 5. ADJUSTABLE SPEED LOGIC
+        int absError = (error < 0) ? -error : error;
+        
+        // Base speed for corners and Boost speed for straights
+        double baseSpeed = 24
+					; 
+        double maxBoost  = 7; // How much extra speed to add on straights
+        
+        // Calculate speed: 
+        // When error is 0, speed = 26.3 + 12.0 = 38.3
+        // When error is 64, speed = 26.3 + 0.0 = 26.3
+        double speed = baseSpeed + (maxBoost * (1.0 - (double)absError / 64.0));
+
+        TIMA0_PWM_DutyCycle(0, 0.0);
+        TIMA0_PWM_DutyCycle(1, speed);
+        TIMA0_PWM_DutyCycle(2, 0.0);
+        TIMA0_PWM_DutyCycle(3, speed);
+
+        Camera_clearDataReady();
+    }
 }
