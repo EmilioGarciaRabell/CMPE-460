@@ -54,18 +54,21 @@ int find_center_line(uint16_t *pixels)
 	}
 
 	// Check if either the car has veered off to the left or right and then correct or if its fine
-	if (leftEdge != -1 && rightEdge != -1 && rightEdge > leftEdge)
-	{
-		previousCenter = (leftEdge + rightEdge) / 2;
-	}
-	else if (leftEdge != -1 && rightEdge == -1)
-	{
-		previousCenter = leftEdge + 20;
-	}
-	else if (rightEdge != -1 && leftEdge == -1)
-	{
-		previousCenter = rightEdge - 20;
-	}
+
+    if (leftEdge != -1 && rightEdge != -1 && rightEdge > leftEdge)
+    {
+        previousCenter = (leftEdge + rightEdge) / 2;
+    }
+    else if (leftEdge != -1 && rightEdge == -1)
+    {
+        // One edge found (Left). Use a smaller offset (18) to prevent sharp dives
+        previousCenter = leftEdge + 10;
+    }
+    else if (rightEdge != -1 && leftEdge == -1)
+    {
+        // One edge found (Right). Use a smaller offset (18) to prevent sharp dives
+        previousCenter = rightEdge - 10;
+    }
 
 	// Return the value in the center
 	return previousCenter;
@@ -83,7 +86,7 @@ int is_carpet(uint16_t *pixels)
 	}
 
 	// If the average is less than 500 then its on the carpet otherwise its not
-	if ((sum / 128) < 500)
+	if ((sum / 128) < 2000)
 	{
 		return 1;
 	}
