@@ -13,7 +13,9 @@
 #include "lab5/adc12.h"
 #include "lab5/timers.h"
 #include <ti/devices/msp/msp.h>
-#include <sysctl.c>
+
+#include <sysctl.h>
+
 #include "lab2/uart.h"
 
 // Linear array of 128 photodiodes from the pdf

@@ -4,77 +4,77 @@
 #include <sysctl.h>
 #include "track_settings.h"
 #include "car_setup.h"
+#include "config.h"
+#include "motor_settings.h"
 
+// Define the actual values for the central config
+CarSettings config = {
+    .steer = {
+        .center_pwm = 92.5f,
+        .min_pwm = 94.5f,    
+        .max_pwm = 90.0f,    
+        .error_min = -64.0f,
+        .error_max = 64.0f,
+        .alpha = 0.8f,
+        .deadzone = 5
+    },
+    .drive = {
+        .base_speed = 27.0,
+        .max_boost = 10.0,
+        .carpet_thresh = 2000
+    },
+    .track = {
+        .edge_threshold = 200,
+        .single_edge_off = 10,
+        .center_reference = 64
+    }
+};
 
-// Main function to set up the timers, camera, etc.
 int main(void)
 {
-	// Initialize the camera and the motors
-	Camera_init();
-	DC_EN_init();
-
-	// Set up timer that will control the servo and the motors
-	uint32_t TIMA1Load = (SYSCTL_SYSCLK_getMCLK() / (9 + 1) / 50) - 1;
-	TIMA1_PWM_init(0, TIMA1Load, 9, 92.5);
-
-	uint32_t TIMA0Load = (SYSCTL_SYSCLK_getMCLK() / (0 + 1) / 10000) - 1;
-
-	TIMA0_PWM_init(0, TIMA0Load, 0, 0.0);
-	TIMA0_PWM_init(1, TIMA0Load, 0, 0.0);
-	TIMA0_PWM_init(2, TIMA0Load, 0, 0.0);
-	TIMA0_PWM_init(3, TIMA0Load, 0, 0.0);
-
+    // Initialize Hardware
+    Camera_init();
+    DC_EN_init();
+    motors_setup(); 
 
     static float filteredServo = 92.5f;
 
-   while (1)
+    while (1)
     {
+        // Wait for camera data
         if (!Camera_isDataReady()) continue;
 
         uint16_t *pixels = Camera_getData();
         
+        // Stop if it encounters carpet
         if (is_carpet(pixels)) 
         {
-            // STOP MOTORS IMMEDIATELY
-            TIMA0_PWM_DutyCycle(0, 0.0);
-            TIMA0_PWM_DutyCycle(1, 0.0);
-            TIMA0_PWM_DutyCycle(2, 0.0);
-            TIMA0_PWM_DutyCycle(3, 0.0);
-            
-            // Optional: Center the wheels while stopped
-            TIMA1_PWM_DutyCycle(0, 92.5); 
-            
+            stop_motors();             // Motor module function
+            write_servo(config.steer.center_pwm); 
             Camera_clearDataReady();
-            continue; // Skip the rest of the loop and check again
+            continue; 
         }
 
-        // --- EXISTING TRACK LOGIC ---
-        int error = find_center_line(pixels) - 64;
+        // Track sensing
+        int current_center = find_center_line(pixels);
+        int error = current_center - config.track.center_reference;
         
-        if (error > -5 && error < 5) error = 0;
+        // Apply deadzone from config
+        if (error > -config.steer.deadzone && error < config.steer.deadzone) {
+            error = 0;
+        }
 
-        float in_min  = -64.0f; 
-        float in_max  =  64.0f; 
-        float out_min = 94.8f;  
-        float out_max = 90.0f;  
+        // Steering calculation
+        double target_angle = calculate_steering_angle(error, filteredServo);
+        filteredServo = (float)target_angle;
 
-        float targetServo = (float)(error - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+        write_servo(filteredServo);
 
-        float alpha = 0.20f; 
-        filteredServo = (targetServo * alpha) + (filteredServo * (1.0f - alpha));
+        // speed calculation
+        double current_speed = calculate_speed(error);
 
-        TIMA1_PWM_DutyCycle(0, (double)filteredServo);
-
-        // Speed Logic
-        int absError = (error < 0) ? -error : error;
-        double baseSpeed = 27.0; 
-        double maxBoost  = 10; 
-        double speed = baseSpeed + (maxBoost * (1.0 - (double)absError / 64.0));
-
-        TIMA0_PWM_DutyCycle(0, 0.0);
-        TIMA0_PWM_DutyCycle(1, speed);
-        TIMA0_PWM_DutyCycle(2, 0.0);
-        TIMA0_PWM_DutyCycle(3, speed);
+        // Apply speed to motors 
+        set_speed_fw(current_speed, current_speed);
 
         Camera_clearDataReady();
     }
