@@ -60,15 +60,15 @@ int main(void)
 
         float targetServo = (float)(error - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 
-        float alpha = 0.20f; 
+        float alpha = 0.13f; 
         filteredServo = (targetServo * alpha) + (filteredServo * (1.0f - alpha));
 
         TIMA1_PWM_DutyCycle(0, (double)filteredServo);
 
         // Speed Logic
         int absError = (error < 0) ? -error : error;
-        double baseSpeed = 27.0; 
-        double maxBoost  = 10; 
+        double baseSpeed = 23.5; 
+        double maxBoost  = 6; 
         double speed = baseSpeed + (maxBoost * (1.0 - (double)absError / 64.0));
 
         TIMA0_PWM_DutyCycle(0, 0.0);
