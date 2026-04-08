@@ -114,10 +114,12 @@ int main(void)
 			// If beats have been recorded then print the BPM
 			if (beats_recorded > 0)
 			{
+				// Check if it is below 30 which is less than the range we chose
 				if (current_bpm < BPM_MIN)
 				{
 					UART0_put("\n\r Heart Rate is out of range: too low");
 				}
+				// Check if it is above 180 which is the upper range we chose
 				else if (current_bpm > BPM_MAX)
 				{
 					UART0_put("\n\r Heart Rate is out of range: too high");
