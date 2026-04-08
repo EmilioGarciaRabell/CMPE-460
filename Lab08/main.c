@@ -9,7 +9,10 @@
 #define TIMG6_PRESCALER 32u
 
 // Threshold to detect a beat, this will probably be tweaked with testing
-#define PEAK_THRESHOLD 2457u
+#define PEAK_THRESHOLD 1857u
+
+#define BPM_MIN 30
+#define BPM_MAX 180
 
 // variables for the beat detection and to calculate BPM
 static volatile int timer_counter = 0;
@@ -99,7 +102,7 @@ int main(void)
 
 	// Variable for the last print time
 	int previous_print = 0;
-
+	
 	while (1)
 	{
 		// Check if it has been 1 second since the last print
@@ -111,9 +114,20 @@ int main(void)
 			// If beats have been recorded then print the BPM
 			if (beats_recorded > 0)
 			{
-				UART0_put("\n\r Heart Rate is ");
-				UART0_printDec(current_bpm);
-				UART0_put("BPM");
+				if (current_bpm < BPM_MIN)
+				{
+					UART0_put("\n\r Heart Rate is out of range: too low");
+				}
+				else if (current_bpm > BPM_MAX)
+				{
+					UART0_put("\n\r Heart Rate is out of range: too high");
+				}
+				else
+				{
+					UART0_put("\n\r Heart Rate is ");
+					UART0_printDec(current_bpm);
+					UART0_put(" BPM");
+				}
 			}
 		}
 	}
