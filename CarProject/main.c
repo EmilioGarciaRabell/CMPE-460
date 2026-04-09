@@ -7,73 +7,85 @@
 #include "config.h"
 #include "motor_settings.h"
 
-// Define the actual values for the central config
 CarSettings config = {
     .steer = {
         .center_pwm = 92.5f,
-        .min_pwm = 94.5f,    
-        .max_pwm = 90.0f,    
-        .error_min = -64.0f,
-        .error_max = 64.0f,
-        .alpha = 0.8f,
-        .deadzone = 5
+        .min_pwm = 87.5f,    
+        .max_pwm = 95.0f,    
+        .deadzone = 3,
+        .Kp = 0.0333f,
+        .Ki = 0.00f,
+        .Kd = 0.15f,
+        .i_limit = 25.0f
     },
     .drive = {
-        .base_speed = 27.0,
-        .max_boost = 10.0,
+        .base_speed =30.0,
+        .speed_sensitivity = 0.15f,
         .carpet_thresh = 2000
     },
     .track = {
-        .edge_threshold = 200,
-        .single_edge_off = 10,
         .center_reference = 64
     }
 };
 
 int main(void)
-{
-    // Initialize Hardware
+{	
     Camera_init();
     DC_EN_init();
     motors_setup(); 
 
-    static float filteredServo = 92.5f;
+    float integral = 0.0f;
+    float last_error = 0.0f;
 
     while (1)
     {
-        // Wait for camera data
         if (!Camera_isDataReady()) continue;
 
         uint16_t *pixels = Camera_getData();
         
-        // Stop if it encounters carpet
         if (is_carpet(pixels)) 
         {
-            stop_motors();             // Motor module function
+            stop_motors(); 
             write_servo(config.steer.center_pwm); 
+            integral = 0;
+            last_error = 0;
             Camera_clearDataReady();
             continue; 
         }
 
-        // Track sensing
         int current_center = find_center_line(pixels);
-        int error = current_center - config.track.center_reference;
         
-        // Apply deadzone from config
+				float error = (float)(config.track.center_reference - current_center);
+				
         if (error > -config.steer.deadzone && error < config.steer.deadzone) {
-            error = 0;
+            error = 0.0f;
         }
 
-        // Steering calculation
-        double target_angle = calculate_steering_angle(error, filteredServo);
-        filteredServo = (float)target_angle;
+        // P term
+        float P = config.steer.Kp * error;
 
-        write_servo(filteredServo);
+        // I term with simple saturation limit
+        integral += error;
+        if (integral > config.steer.i_limit)  integral = config.steer.i_limit;
+        if (integral < -config.steer.i_limit) integral = -config.steer.i_limit;
+        float I = config.steer.Ki * integral;
 
-        // speed calculation
-        double current_speed = calculate_speed(error);
+        // D term (simple difference)
+        float D = config.steer.Kd * (error - last_error);
+        last_error = error;
 
-        // Apply speed to motors 
+        // Total output
+        float targetServo = config.steer.center_pwm + (P + I + D);
+
+        // Hardware safety clamp
+        if (targetServo < config.steer.min_pwm) targetServo = config.steer.min_pwm;
+        if (targetServo > config.steer.max_pwm) targetServo = config.steer.max_pwm;
+        write_servo(targetServo);
+
+        // Simple speed control
+        float error_mag = (error < 0) ? -error : error;
+        double current_speed = config.drive.base_speed - (error_mag * config.drive.speed_sensitivity);
+        
         set_speed_fw(current_speed, current_speed);
 
         Camera_clearDataReady();

@@ -13,6 +13,6 @@ void write_servo(double angle);
 
 /* Calculations */
 double calculate_steering_angle(int error, float current_filtered_servo);
-double calculate_speed(int error);
+double calculate_speed(float error);
 
 #endif /* MOTOR_SETTINGS_H */
