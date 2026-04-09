@@ -8,9 +8,10 @@
 // Prescaler for TIMG6, using the same one as in lab 5
 #define TIMG6_PRESCALER 32u
 
-// Threshold to detect a beat, this will probably be tweaked with testing
+// Threshold to detect a beat lowkey just tried a bunch of different numbers until one worked
 #define PEAK_THRESHOLD 1857u
 
+// Values to decide if the bpm is too high or low
 #define BPM_MIN 30
 #define BPM_MAX 180
 

@@ -5,71 +5,85 @@
 #include "track_settings.h"
 #include "car_setup.h"
 
-
-// Main function to set up the timers, camera, etc.
 int main(void)
 {
-	// Initialize the camera and the motors
-	Camera_init();
-	DC_EN_init();
+    Camera_init();
+    DC_EN_init();
 
-	// Set up timer that will control the servo and the motors
-	uint32_t TIMA1Load = (SYSCTL_SYSCLK_getMCLK() / (9 + 1) / 50) - 1;
-	TIMA1_PWM_init(0, TIMA1Load, 9, 92.5);
+    uint32_t TIMA1Load = (SYSCTL_SYSCLK_getMCLK() / (9 + 1) / 50) - 1;
+    TIMA1_PWM_init(0, TIMA1Load, 9, 92.5);
 
-	uint32_t TIMA0Load = (SYSCTL_SYSCLK_getMCLK() / (0 + 1) / 10000) - 1;
+    uint32_t TIMA0Load = (SYSCTL_SYSCLK_getMCLK() / (0 + 1) / 10000) - 1;
 
-	TIMA0_PWM_init(0, TIMA0Load, 0, 0.0);
-	TIMA0_PWM_init(1, TIMA0Load, 0, 0.0);
-	TIMA0_PWM_init(2, TIMA0Load, 0, 0.0);
-	TIMA0_PWM_init(3, TIMA0Load, 0, 0.0);
-
+    TIMA0_PWM_init(0, TIMA0Load, 0, 0.0);
+    TIMA0_PWM_init(1, TIMA0Load, 0, 0.0);
+    TIMA0_PWM_init(2, TIMA0Load, 0, 0.0);
+    TIMA0_PWM_init(3, TIMA0Load, 0, 0.0);
 
     static float filteredServo = 92.5f;
+    static int prevError = 0;
 
-   while (1)
+    while (1)
     {
         if (!Camera_isDataReady()) continue;
 
         uint16_t *pixels = Camera_getData();
-        
-        if (is_carpet(pixels)) 
+
+        // --- CARPET STOP ---
+        if (is_carpet(pixels))
         {
-            // STOP MOTORS IMMEDIATELY
             TIMA0_PWM_DutyCycle(0, 0.0);
             TIMA0_PWM_DutyCycle(1, 0.0);
             TIMA0_PWM_DutyCycle(2, 0.0);
             TIMA0_PWM_DutyCycle(3, 0.0);
-            
-            // Optional: Center the wheels while stopped
-            TIMA1_PWM_DutyCycle(0, 92.5); 
-            
+
+            TIMA1_PWM_DutyCycle(0, 92.5);
+
             Camera_clearDataReady();
-            continue; // Skip the rest of the loop and check again
+            continue;
         }
 
-        // --- EXISTING TRACK LOGIC ---
-        int error = find_center_line(pixels) - 64;
-        
-        if (error > -5 && error < 5) error = 0;
+        // --- CENTER LINE ---
+        int center = find_center_line(pixels);
+        int error = center - 64;
 
-        float in_min  = -64.0f; 
-        float in_max  =  64.0f; 
-        float out_min = 94.8f;  
-        float out_max = 90.0f;  
+        // Deadband (reduces jitter)
+        if (error > -2 && error < 2) error = 0;
 
-        float targetServo = (float)(error - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+        // --- PD CONTROL ---
+        float Kp = 0.45f;
+        float Kd = 0.35f;
 
-        float alpha = 0.13f; 
-        filteredServo = (targetServo * alpha) + (filteredServo * (1.0f - alpha));
+        int derivative = error - prevError;
+
+        float targetServo = 92.5f + (Kp * error) + (Kd * derivative);
+
+        prevError = error;
+
+        // Clamp servo range
+        if (targetServo > 100.0f) targetServo = 100.0f;
+        if (targetServo < 85.0f)  targetServo = 85.0f;
+
+        // --- RATE LIMITING (smooth but still fast) ---
+        float maxStep = 3.0f;
+
+        float delta = targetServo - filteredServo;
+
+        if (delta > maxStep) delta = maxStep;
+        if (delta < -maxStep) delta = -maxStep;
+
+        filteredServo += delta;
 
         TIMA1_PWM_DutyCycle(0, (double)filteredServo);
 
-        // Speed Logic
+        // --- SPEED CONTROL ---
         int absError = (error < 0) ? -error : error;
-        double baseSpeed = 23.5; 
-        double maxBoost  = 6; 
-        double speed = baseSpeed + (maxBoost * (1.0 - (double)absError / 64.0));
+
+        double baseSpeed = 0.0;
+        double maxBoost  = 0.0;
+
+        double normalizedError = (double)absError / 64.0;
+        double speed = baseSpeed + maxBoost * (1.0 - (normalizedError * normalizedError));
 
         TIMA0_PWM_DutyCycle(0, 0.0);
         TIMA0_PWM_DutyCycle(1, speed);
