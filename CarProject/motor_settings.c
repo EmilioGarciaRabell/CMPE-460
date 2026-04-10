@@ -29,17 +29,17 @@ void motors_setup() {
     stop_motors();
 }
 
-void set_speed_fw(double speed_left, double speed_right) {
+void set_speed_fw(double speed_right, double speed_left) {
     TIMA0_PWM_DutyCycle(0, 0.0);
-    TIMA0_PWM_DutyCycle(1, speed_left);
+    TIMA0_PWM_DutyCycle(1, speed_right);
     TIMA0_PWM_DutyCycle(2, 0.0);
-    TIMA0_PWM_DutyCycle(3, speed_right);
+    TIMA0_PWM_DutyCycle(3, speed_left);
 }
 
-void set_speed_bw(double speed_left, double speed_right) {
-    TIMA0_PWM_DutyCycle(0, speed_left);
+void set_speed_bw(double speed_right, double speed_left) {
+    TIMA0_PWM_DutyCycle(0, speed_right);
     TIMA0_PWM_DutyCycle(1, 0.0);
-    TIMA0_PWM_DutyCycle(2, speed_right);
+    TIMA0_PWM_DutyCycle(2, speed_left);
     TIMA0_PWM_DutyCycle(3, 0.0);
 }
 
