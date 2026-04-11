@@ -3,79 +3,51 @@
 #include <ti/devices/msp/msp.h>
 #include <sysctl.h>
 #include "track_settings.h"
+#include "lab2/uart.h"
+#include "uart_extras.h"
 
 /*The functions living under this module will manage any track settings, 
 	like finding the center and checking if the car is on the track*/
 	
 	
 	// Function to find the center line on the track with the camera input data
-int find_center_line(uint16_t *pixels)
+int find_center_line(uint16_t *in)
 {
-    static int previousCenter = 64;
-
-    uint16_t smoothingFilter[128];
-
-    // Keep edges
-    smoothingFilter[0] = pixels[0];
-    smoothingFilter[127] = pixels[127];
-
-    // --- SMOOTHING ---
-    for (int i = 1; i < 127; i++)
+    /*  Find the dynamic range (min/max) */
+    uint16_t mn = in[0], mx = in[0];
+    int i;
+    for (i = 1; i < 128; i++)
     {
-        smoothingFilter[i] = (pixels[i - 1] + pixels[i] + pixels[i + 1]) / 3;
+        if (in[i] < mn) mn = in[i];
+        if (in[i] > mx) mx = in[i];
     }
 
-    int leftEdge = -1;
-    int rightEdge = -1;
+    /*  Calculate the midpoint threshold */
+    uint16_t threshold = (uint16_t)(((uint32_t)mx + mn) / 2u);
 
-    int threshold = 180; 
+    /*  Weighted Average (Center of Mass) calculation */
+    uint32_t sum_indices = 0;
+    uint32_t count = 0;
 
-    // --- FIND LEFT EDGE (dark -> light) ---
-    for (int i = 12; i < 118; i++)
+    for (i = 0; i < 128; i++)
     {
-        int diff = (int)smoothingFilter[i] - (int)smoothingFilter[i - 1];
-
-        if (diff > threshold)
+        // Assuming a dark line: if pixel value is LESS than threshold
+        // If your track is inverted (white line on black), change to in[i] > threshold
+        if (in[i] < threshold)
         {
-            leftEdge = i;
-            break;
+            sum_indices += i;
+            count++;
         }
     }
 
-    // --- FIND RIGHT EDGE (light -> dark) ---
-    for (int i = 116; i > 10; i--)
+    /*  Return the center or a 'lost' signal */
+    if (count == 0)
     {
-        int diff = (int)smoothingFilter[i] - (int)smoothingFilter[i + 1];
-
-        if (diff > threshold)
-        {
-            rightEdge = i;
-            break;
-        }
+        return 64; // Default to center if no line is detected
     }
 
-    // --- CENTER CALCULATION ---
-    if (leftEdge != -1 && rightEdge != -1 && rightEdge > leftEdge)
-    {
-        previousCenter = (leftEdge + rightEdge) / 2;
-    }
-    else if (leftEdge != -1 && rightEdge == -1)
-    {
-        // Estimate using track width (~40 pixels)
-        previousCenter = leftEdge + 20;
-    }
-    else if (rightEdge != -1 && leftEdge == -1)
-    {
-        previousCenter = rightEdge - 20;
-    }
-
-    // Clamp to valid range
-    if (previousCenter < 0) previousCenter = 0;
-    if (previousCenter > 127) previousCenter = 127;
-
-    return previousCenter;
+    return (int)(sum_indices / count);
 }
-
 // Function to check if the car is on the carpet by seeing if the camera data is mostly dark
 int is_carpet(uint16_t *pixels)
 {
