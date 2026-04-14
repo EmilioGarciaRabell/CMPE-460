@@ -9,9 +9,11 @@ typedef struct {
     float max_pwm;        
     int deadzone;         
     
-    float Kp;
+    float Kp;        // Straight/Normal Kp
+    float Kd;        // Straight/Normal Kd
+    float Kp_turn;   // Aggressive Turn Kp
+    float Kd_turn;   // Lower resistance Kd for Turns
     float Ki;
-    float Kd;
 
     float i_limit;        
 } SteeringConfig;
@@ -19,6 +21,8 @@ typedef struct {
 typedef struct {
     double base_speed;    
     float speed_sensitivity; 
+    float diff_k;          // Differential steering gain
+    float min_speed;       // Minimum motor floor
     uint32_t carpet_thresh; 
 } DriveConfig;
 

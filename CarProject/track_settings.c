@@ -13,7 +13,6 @@
 	// Function to find the center line on the track with the camera input data
 int find_center_line(uint16_t *in)
 {
-    /*  Find the dynamic range (min/max) */
     uint16_t mn = in[0], mx = in[0];
     int i;
     for (i = 1; i < 128; i++)
@@ -22,32 +21,35 @@ int find_center_line(uint16_t *in)
         if (in[i] > mx) mx = in[i];
     }
 
-    /*  Calculate the midpoint threshold */
+    // Midpoint threshold
     uint16_t threshold = (uint16_t)(((uint32_t)mx + mn) / 2u);
 
-    /*  Weighted Average (Center of Mass) calculation */
-    uint32_t sum_indices = 0;
-    uint32_t count = 0;
+    uint32_t weighted_sum = 0;
+    uint32_t total_weight = 0;
 
     for (i = 0; i < 128; i++)
     {
-        // Assuming a dark line: if pixel value is LESS than threshold
-        // If your track is inverted (white line on black), change to in[i] > threshold
+        // Check if the pixel is part of the line (darker than threshold)
         if (in[i] < threshold)
         {
-            sum_indices += i;
-            count++;
+            // Calculate "weight" based on how dark the pixel is
+            // More dark = higher weight
+            uint16_t weight = threshold - in[i]; 
+            
+            weighted_sum += (uint32_t)(i * weight);
+            total_weight += (uint32_t)weight;
         }
     }
 
-    /*  Return the center or a 'lost' signal */
-    if (count == 0)
+    if (total_weight == 0)
     {
-        return 64; // Default to center if no line is detected
+        return 64; 
     }
 
-    return (int)(sum_indices / count);
+    // This division now includes the "intensity" of the line
+    return (int)(weighted_sum / total_weight);
 }
+
 // Function to check if the car is on the carpet by seeing if the camera data is mostly dark
 int is_carpet(uint16_t *pixels)
 {
