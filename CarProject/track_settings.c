@@ -62,7 +62,7 @@ int is_carpet(uint16_t *pixels)
 	}
 
 	// If the average is less than 500 then its on the carpet otherwise its not
-	if ((sum / 128) < 2000)
+	if ((sum / 128) < 300)
 	{
 		return 1;
 	}

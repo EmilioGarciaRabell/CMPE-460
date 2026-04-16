@@ -1,146 +1,98 @@
-#include "lab5/camera.h"
-#include "lab6/timers.h"
 #include <ti/devices/msp/msp.h>
 #include <sysctl.h>
+#include <math.h>
+#include "lab5/camera.h"
+#include "lab6/timers.h"
+#include "lab2/uart.h"
+#include "uart_extras.h"
 #include "track_settings.h"
 #include "car_setup.h"
 #include "config.h"
 #include "motor_settings.h"
-#include <math.h>
-#include "lab2/uart.h"
-#include "uart_extras.h"
 
-// Configuration settings for car steering, speed, and track reference
 CarSettings config = {
     .steer = {
         .center_pwm = 92.5f,
         .min_pwm = 86.0f,    
         .max_pwm = 99.0f,    
-        .deadzone = 4
-			,
-        .Kp = 0.02,        
-        .Kd = 0.38,         
-        .Kp_turn = 0.095f,   
-        .Kd_turn = 0.08f,    
-        .Ki = 0.0000001f,
+        .deadzone = 4,
+        .Kp = 0.055f,       // Slightly increased to compensate for squared error
+        .Kd = 0.25f,        
+        .Ki = 0.0f,
         .i_limit = 10.0f
     },
     .drive = {
-        .base_speed = 40.0,
-        .speed_sensitivity = 0.22,//0.4f,
-        .diff_k = 0.15f,
-        .min_speed = 12.0f,
-        .carpet_thresh = 2000
+        .base_speed = 38.0,
+        .speed_sensitivity = 0.2f,
+        .diff_k = 0.20f,
+        .min_speed = 12.0f
     },
     .track = {
-        .center_reference = 64
+        .center_reference = 73  // Hardware center from your UART data
     }
 };
 
 int main(void)
 {   
-    // Initialize hardware peripherals
     Camera_init();
     DC_EN_init();
     motors_setup(); 
     UART0_init();
 
-    float integral = 0.0f;
     float last_error = 0.0f;
+    float filtered_error = 0.0f;
+    float alpha = 0.80f; 
+    static int last_valid_center = 73;
 
     while (1)
     {
-        // Wait for new camera frame
         if (!Camera_isDataReady()) continue;
 
         uint16_t *pixels = Camera_getData();
-        
-        // Safety check for off-track/carpet detection
-        if (is_carpet(pixels)) 
-        {
-            stop_motors(); 
-            write_servo(config.steer.center_pwm); 
-            integral = 0;
-            last_error = 0;
-            Camera_clearDataReady();
-            continue; 
-        }
-
-        // Process pixel data to find line position
         int current_center = find_center_line(pixels);
         
-        // Revert to center reference if line is lost
+        //  Map actual sensor range (15-115) to full theoretical range (0-127)
+        float mapped_center;
         if (current_center <= 0 || current_center >= 127) {
-            current_center = config.track.center_reference;
+            mapped_center = (last_valid_center < config.track.center_reference) ? 0 : 127;
+        } else {
+            // Stretch the 15-115 range to 0-127 for full control authority
+            if (current_center < 15) mapped_center = 0;
+            else if (current_center > 115) mapped_center = 127;
+            else {
+                mapped_center = (float)(current_center - 15) * (127.0f / 100.0f);
+            }
+            last_valid_center = current_center;
         }
 
-        // Calculate steering error
-        float error = (float)(config.track.center_reference - current_center);
-        float abs_error = fabs(error);
+        // Error Calculation & Filtering
+        float raw_error = (float)(config.track.center_reference - mapped_center);
+        if (fabs(raw_error) < (float)config.steer.deadzone) raw_error = 0.0f;
 
-        // Apply deadzone to prevent jitter on straights
-        if (abs_error < (float)config.steer.deadzone) {
-            error = 0.0f;
-        }
+        filtered_error = (alpha * raw_error) + ((1.0f - alpha) * filtered_error);
+
+        //  PID Logic (Squared P for smoother center)
+        float error_sq = (filtered_error * filtered_error) / 64.0f;
+        if (filtered_error < 0) error_sq = -error_sq;
         
-        float active_Kp, active_Kd, active_diff_k;
-				UART0_printDec(current_center);
-				UART0_put("\r\n");
-        // Dynamic Gain Scheduling: Switch parameters based on turn severity
-        if (abs_error > 35.0f) 
-        {
-            // Aggressive turning parameters for curves
-            active_Kp = config.steer.Kp_turn; 
-            active_Kd = config.steer.Kd_turn;  
-            active_diff_k = 0.14f; 
-        } 
-        else 
-        {
-            // Stable parameters for straight sections
-            active_Kp = config.steer.Kp; 
-            active_Kd = config.steer.Kd;  
-            active_diff_k = 0.0f; 
-        }
+        float P = config.steer.Kp * error_sq;
+        float D = config.steer.Kd * (filtered_error - last_error);
         
-        // PID calculation
-        float P = active_Kp * error;
+        float targetServo = config.steer.center_pwm + P + D;
 
-        integral += error;
-        if (integral > config.steer.i_limit)  integral = config.steer.i_limit;
-        if (integral < -config.steer.i_limit) integral = -config.steer.i_limit;
-        float I = config.steer.Ki * integral;
-
-        float D = active_Kd * (error - last_error);
-
-        // Apply calculated output to steering servo
-        float targetServo = config.steer.center_pwm + P + I + D;
-        
-        // Clamp servo values to physical hardware limits
+        // Servo Clamping
         if (targetServo < config.steer.min_pwm) targetServo = config.steer.min_pwm;
         if (targetServo > config.steer.max_pwm) targetServo = config.steer.max_pwm;
-        
         write_servo(targetServo);
 
-        // Adjust base speed based on error (slow down in turns)
-        double current_speed = config.drive.base_speed - (abs_error * config.drive.speed_sensitivity);
+        // Motor Control
+        double target_speed = config.drive.base_speed - (fabs(filtered_error) * config.drive.speed_sensitivity);
+        if (target_speed < config.drive.min_speed) target_speed = config.drive.min_speed;
         
-        if (current_speed < config.drive.min_speed) current_speed = config.drive.min_speed;
-        
-        // Calculate differential speed for motors
-        float diff_offset = error * active_diff_k; 
+        float diff_offset = filtered_error * config.drive.diff_k; 
+        set_speed_fw(target_speed - diff_offset, target_speed + diff_offset);
 
-        double left_speed = current_speed + diff_offset;
-        double right_speed = current_speed - diff_offset;
-
-        // Ensure motors maintain minimum operational power
-        if (left_speed < 10.0) left_speed = 10.0;
-        if (right_speed < 10.0) right_speed = 10.0;
-        
-        // Update motor speeds
-        set_speed_fw(right_speed, left_speed + 0.5);
-
-        // Update state for next loop iteration
-        last_error = error;
+        last_error = filtered_error;
         Camera_clearDataReady();
     }
 }
