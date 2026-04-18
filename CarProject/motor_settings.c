@@ -54,14 +54,14 @@ void write_servo(double angle) {
     TIMA1_PWM_DutyCycle(0, angle);
 }
 
-double calculate_speed(float error) {
-    float abs_error = (error < 0) ? -error : error;
-    
-    // Reduces base speed as error increases
-    double speed = config.drive.base_speed - (abs_error * config.drive.speed_sensitivity);
-    
-    // Ensure speed doesn't drop below zero
-    if (speed < 0) speed = 0;
-    
-    return speed;
-}
+//double calculate_speed(float error) {
+//    float abs_error = (error < 0) ? -error : error;
+//    
+//    // Reduces base speed as error increases
+//    double speed = config.drive.base_speed - (abs_error * config.drive.speed_sensitivity);
+//    
+//    // Ensure speed doesn't drop below zero
+//    if (speed < 0) speed = 0;
+//    
+//    return speed;
+//}

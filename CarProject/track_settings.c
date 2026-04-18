@@ -14,39 +14,34 @@
 int find_center_line(uint16_t *in)
 {
     uint16_t mn = in[0], mx = in[0];
-    int i;
-    for (i = 1; i < 128; i++)
-    {
+    for (int i = 1; i < 128; i++) {
         if (in[i] < mn) mn = in[i];
         if (in[i] > mx) mx = in[i];
     }
 
-    // Midpoint threshold
-    uint16_t threshold = (uint16_t)(((uint32_t)mx + mn) / 2u);
+    // 1. CONTRAST CHECK
+    // If the difference between the brightest and darkest pixel is small,
+    // there is no line. Stop processing and return center.
+    if ((mx - mn) < 150) { // Adjust '150' based on your sensor readings
+        return 73; 
+    }
 
+    uint16_t threshold = (uint16_t)(((uint32_t)mx + mn) / 2u);
     uint32_t weighted_sum = 0;
     uint32_t total_weight = 0;
 
-    for (i = 0; i < 128; i++)
-    {
-        // Check if the pixel is part of the line (darker than threshold)
-        if (in[i] < threshold)
-        {
-            // Calculate "weight" based on how dark the pixel is
-            // More dark = higher weight
-            uint16_t weight = threshold - in[i]; 
-            
+    for (int i = 0; i < 128; i++) {
+        // 2. DIRECTION CHECK
+        // Change '<' to '>' if you are tracking a WHITE line on a DARK floor.
+        if (in[i] > threshold) { 
+            uint16_t weight = in[i] - threshold; 
             weighted_sum += (uint32_t)(i * weight);
             total_weight += (uint32_t)weight;
         }
     }
 
-    if (total_weight == 0)
-    {
-        return 64; 
-    }
+    if (total_weight == 0) return 73;
 
-    // This division now includes the "intensity" of the line
     return (int)(weighted_sum / total_weight);
 }
 
@@ -71,3 +66,6 @@ int is_carpet(uint16_t *pixels)
 		return 0;
 	}
 }
+
+
+
