@@ -1,6 +1,6 @@
 #ifndef CAR_SETUP_H
 #define CAR_SETUP_H
-
+#include "config.h"
 #include <ti/devices/msp/msp.h>
 
 /**
@@ -16,4 +16,5 @@
  */
 void DC_EN_init(void);
 
+void mode_config(CarSettings *c, int mode);
 #endif /* CAR_SETUP_H */

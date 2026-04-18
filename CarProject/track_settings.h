@@ -28,4 +28,7 @@ int find_center_line(uint16_t *pixels);
  */
 int is_carpet(uint16_t *pixels);
 
+// Global variable for the finish line detection
+extern int dark_pixel_count;
+
 #endif /* TRACK_MANAGEMENT_H */

@@ -3,6 +3,7 @@
 #include <ti/devices/msp/msp.h>
 #include <sysctl.h>
 #include "car_setup.h"
+#include "config.h"
 
 /* The functions living here are needed for the initialization of the car*/
 
@@ -49,4 +50,68 @@ void DC_EN_init(void)
 	// Set the GPIO module so that the register is enabled, does not set any value to it though
 	GPIOB->DOUTSET31_0 = (1 << 19);
 	GPIOA->DOUTSET31_0 = (1 << 22);
+}
+
+
+void mode_config(CarSettings *c, int mode) {
+    // Mode 1: Pro Mode (The values you shared - Fastest)
+    if (mode == 1) {
+        c->steer.center_pwm = 92.5f;
+        c->steer.min_pwm = 90.0f;
+        c->steer.max_pwm = 95.0f;
+        c->steer.deadzone = 2;
+        c->steer.Kp = 0.055f;
+        c->steer.Kd = 0.31f;
+        c->steer.Kp_turn = 0.07f;
+        c->steer.Kd_turn = 0.28f;
+        c->steer.Ki = 0.0f;
+        c->steer.i_limit = 10.0f;
+
+        c->drive.base_speed = 48.0;
+        c->drive.speed_sensitivity = 0.47f;
+        c->drive.diff_k = 0.18f;
+        c->drive.min_speed = 23.0f;
+        
+        c->track.center_reference = 64;
+    }
+    // Mode 2: Mid Mode (Stability focused)
+    else if (mode == 2) {
+        c->steer.center_pwm = 92.5f;
+        c->steer.min_pwm = 90.0f;
+        c->steer.max_pwm = 95.0f;
+        c->steer.deadzone = 2;
+        c->steer.Kp = 0.045f;
+        c->steer.Kd = 0.25f;
+        c->steer.Kp_turn = 0.06f;
+        c->steer.Kd_turn = 0.22f;
+        c->steer.Ki = 0.0f;
+        c->steer.i_limit = 10.0f;
+
+        c->drive.base_speed = 35.0; // Slower base for consistency
+        c->drive.speed_sensitivity = 0.40f;
+        c->drive.diff_k = 0.15f;
+        c->drive.min_speed = 18.0f;
+        
+        c->track.center_reference = 64;
+    }
+    // Mode 3: Training/Safe Mode (Slow)
+    else {
+        c->steer.center_pwm = 92.5f;
+        c->steer.min_pwm = 91.0f; // More restricted steering for safety
+        c->steer.max_pwm = 94.0f;
+        c->steer.deadzone = 3;
+        c->steer.Kp = 0.035f;
+        c->steer.Kd = 0.15f;
+        c->steer.Kp_turn = 0.04f;
+        c->steer.Kd_turn = 0.15f;
+        c->steer.Ki = 0.0f;
+        c->steer.i_limit = 10.0f;
+
+        c->drive.base_speed = 25.0; 
+        c->drive.speed_sensitivity = 0.30f;
+        c->drive.diff_k = 0.10f;
+        c->drive.min_speed = 15.0f;
+        
+        c->track.center_reference = 64;
+    }
 }

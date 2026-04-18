@@ -40,4 +40,6 @@ void Display_update(const uint16_t *pixels, DisplayMode mode);
  */
 void Display_cycleMode(void);
 
+int select_mode(void);
+void s_delay(void);
 #endif /* DISPLAY_H */

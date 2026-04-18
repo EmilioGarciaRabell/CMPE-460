@@ -9,41 +9,21 @@
 #include <math.h>
 #include "lab2/uart.h"
 #include "uart_extras.h"
+#include "peripherals.h"
 
-CarSettings config = {
-    .steer = {
-        .center_pwm = 92.5f,
-        .min_pwm = 90.0f,    // Restored your full range for tight turns
-        .max_pwm = 95.0f,   
-        .deadzone = 2,       // Low deadzone since we have a smoothing filter
-        
-        // PID GAINS: Since error is now max 20, these need to be higher than before
-        .Kp = 0.055f,         // Proportional
-        .Kd = 0.31f,         // Derivative
-        .Kp_turn = 0.07f,    // Aggressive curve entry
-        .Kd_turn = 0.28f,    
-        .Ki = 0.0f,
-        .i_limit = 10.0f
-    },
-    .drive = {
-        .base_speed = 48.0,
-        .speed_sensitivity = 0.47f,
-        .diff_k = 0.18f,
-        .min_speed = 23.0f
-    },
-    .track = {
-        .center_reference = 64 // UPDATED: Your physical center is 60
-    }
-};
+CarSettings config; // declare structure
 
 int main(void)
 {   
+		// select speed mode
+		int mode = select_mode();
+		// pass address to configure the mode
+		mode_config(&config, mode);
+	
     Camera_init();
     DC_EN_init();
     motors_setup(); 
     UART0_init();
-
-    float integral = 0.0f;
     float last_error = 0.0f;
     float filtered_center = 60.0f;
     const float alpha = 0.45f;
@@ -53,18 +33,22 @@ int main(void)
         if (!Camera_isDataReady()) continue;
 
         uint16_t *pixels = Camera_getData();
-        
-        if (is_carpet(pixels)) 
-        {
-            stop_motors(); 
-            write_servo(config.steer.center_pwm); 
-            integral = 0; last_error = 0;
-            Camera_clearDataReady();
-            continue; 
-        }
+       
 
-        // 1. Process Raw Data
+        // Process Raw Data
         int raw_center = find_center_line(pixels);			
+				
+				// Finish line stopping. TODO: test it. this works by checking how much black there is
+				if (dark_pixel_count > 25) {
+						stop_motors();
+						write_servo(config.steer.center_pwm);
+						
+						// Stay in this loop forever so the car doesn't move again
+						while(1) {
+								
+						}
+				}
+				
 				
         UART0_printDec(raw_center);
 				UART0_put("\n\r");
@@ -74,16 +58,14 @@ int main(void)
             raw_center = config.track.center_reference;
         }
 
-        // 2. Smooth the Input
+        // Smooth the Input
         filtered_center = (alpha * (float)raw_center) + ((1.0f - alpha) * filtered_center);
 
-        // 3. Calculate Error (Current - Reference)
-        // If line is at 80 (Right), error is 20.
-        // If line is at 40 (Left), error is -20.
+        // Calculate Error (Current - Reference)
         float error = filtered_center - (float)config.track.center_reference;
         float abs_error = fabs(error);
 
-        // 4. Gain Scheduling
+        // Gain Scheduling
         float active_Kp, active_Kd;
         if (abs_error > 12.0f) { // "12" is halfway to your sensor edge
             active_Kp = config.steer.Kp_turn; 
@@ -93,18 +75,12 @@ int main(void)
             active_Kd = config.steer.Kd;  
         }
 
-        // 5. PID Logic
+        // 5. PD Logic
         float P = active_Kp * error;
-        
-        integral += error;
-        if (integral > config.steer.i_limit)  integral = config.steer.i_limit;
-        if (integral < -config.steer.i_limit) integral = -config.steer.i_limit;
-        float I = config.steer.Ki * integral;
-
         float D = active_Kd * (error - last_error);
 
-        // 6. Servo Output (Standard: PWM increases to turn Right)
-        float targetServo = config.steer.center_pwm + (P + I + D);
+        // Servo Output (Standard: PWM increases to turn Right)
+        float targetServo = config.steer.center_pwm + (P + D);
         
         // Clamp to hardware limits
         if (targetServo < config.steer.min_pwm) targetServo = config.steer.min_pwm;
@@ -112,7 +88,7 @@ int main(void)
         
         write_servo(targetServo);
 
-        // 7. Motor Logic
+        // Motor Logic
         double current_speed = config.drive.base_speed - (abs_error * config.drive.speed_sensitivity);
         if (current_speed < config.drive.min_speed) current_speed = config.drive.min_speed;
 

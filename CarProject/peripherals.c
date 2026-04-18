@@ -17,11 +17,14 @@
 #include "oled.h"   /* adjust path to wherever oled.h lives in your tree */
 #include <string.h>
 #include <stdint.h>
+#include "lab5/switches.h"
 
 /* -- constants ---------------------------------------------------------------- */
 #define NUM_PIXELS     128
 #define ADC_MAX        0x3FFFu   /* 14-bit ADC ceiling used by draw_1d_data     */
 #define SMOOTH_WINDOW  5         /* must be odd; mirrors movmean(data, 5)        */
+// delay constant
+#define DELAY_COUNT 2000000
 
 /* -- module state ------------------------------------------------------------- */
 static DisplayMode  s_mode          = DISPLAY_MODE_EDGE;   /* default: edge view */
@@ -111,7 +114,53 @@ void Display_update(const uint16_t *pixels, DisplayMode mode)
     }
 }
 
+
+
 void Display_cycleMode(void)
 {
     s_mode = (DisplayMode)((s_mode + 1) % 3);
+}
+
+void s_delay(void)
+{
+    for (volatile long i = 0; i < DELAY_COUNT; i++)
+        ;
+}
+
+
+int select_mode(){
+	Display_init();
+	S1_init();
+	S2_init();
+	unsigned char* mode1 = (unsigned char*)"mode 1 - Pro";
+	unsigned char* mode2 = (unsigned char*)"mode 2 - Mid";
+	unsigned char* mode3 = (unsigned char*)"mode 3 - Eco";
+	
+	unsigned char* modes[] = { mode1, mode2, mode3 };
+	
+	int current_selection = 0;
+	int num_modes = 3;
+	while(1){
+		
+		
+		OLED_display_clear();
+		
+		for (int i = 0; i < num_modes; i++) {
+			if (i == current_selection) {
+					OLED_draw_line(i, 0, (unsigned char*)"->"); 
+			}
+			OLED_draw_line(i, i, modes[i]);
+		}
+		
+		if(S1_pressed()){
+			current_selection = (current_selection + 1) % num_modes; 
+			s_delay();
+		}
+		
+		if (S2_pressed()){
+			s_delay();
+			return current_selection + 1;
+		}
+	}
+
 }
