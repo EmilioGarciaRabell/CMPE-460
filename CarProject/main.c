@@ -15,6 +15,7 @@ CarSettings config; // declare structure
 
 int main(void)
 {   
+		
 		// select speed mode
 		int mode = select_mode();
 		// pass address to configure the mode
@@ -36,10 +37,12 @@ int main(void)
        
 
         // Process Raw Data
+			
         int raw_center = find_center_line(pixels);			
-				
+				UART0_printDec(dark_pixel_count);
+				UART0_put("\n\r");
 				// Finish line stopping. TODO: test it. this works by checking how much black there is
-				if (dark_pixel_count > 25) {
+				if (dark_pixel_count < 60) {
 						stop_motors();
 						write_servo(config.steer.center_pwm);
 						
@@ -50,8 +53,7 @@ int main(void)
 				}
 				
 				
-        UART0_printDec(raw_center);
-				UART0_put("\n\r");
+        
 				
         // Safety: If we lose the line, don't jerk the wheel
         if (raw_center < 2 || raw_center > 122) {

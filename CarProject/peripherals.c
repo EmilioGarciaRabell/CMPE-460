@@ -18,7 +18,6 @@
 #include <string.h>
 #include <stdint.h>
 #include "lab5/switches.h"
-
 /* -- constants ---------------------------------------------------------------- */
 #define NUM_PIXELS     128
 #define ADC_MAX        0x3FFFu   /* 14-bit ADC ceiling used by draw_1d_data     */
@@ -128,39 +127,46 @@ void s_delay(void)
 }
 
 
-int select_mode(){
-	Display_init();
-	S1_init();
-	S2_init();
-	unsigned char* mode1 = (unsigned char*)"mode 1 - Pro";
-	unsigned char* mode2 = (unsigned char*)"mode 2 - Mid";
-	unsigned char* mode3 = (unsigned char*)"mode 3 - Eco";
-	
-	unsigned char* modes[] = { mode1, mode2, mode3 };
-	
-	int current_selection = 0;
-	int num_modes = 3;
-	while(1){
-		
-		
-		OLED_display_clear();
-		
-		for (int i = 0; i < num_modes; i++) {
-			if (i == current_selection) {
-					OLED_draw_line(i, 0, (unsigned char*)"->"); 
-			}
-			OLED_draw_line(i, i, modes[i]);
-		}
-		
-		if(S1_pressed()){
-			current_selection = (current_selection + 1) % num_modes; 
-			s_delay();
-		}
-		
-		if (S2_pressed()){
-			s_delay();
-			return current_selection + 1;
-		}
-	}
+int select_mode() {
+    OLED_Init(); // Ensure display is ready
+    S1_init();
+    S2_init();
 
+    char *modes[] = { "PRO MODE", "MID MODE", "ECO MODE" };
+    int current_selection = 0;
+    int num_modes = 3;
+    int redraw = 1;
+
+    while(1) {
+        if (redraw) {
+            OLED_display_clear();
+            
+            for (int i = 0; i < num_modes; i++) {
+                // ROW: Use i+1 because the library math is (x-1). 
+                // i=0 becomes row 1, i=1 becomes row 2, etc.
+                int display_row = i + 1; 
+                
+                if (i == current_selection) {
+                    // COL: Use 1 for the arrow (first character slot)
+                    OLED_Print(display_row, 1, "->"); 
+                }
+                
+                // COL: Use 4 for text (starts at the 4th character slot)
+                OLED_Print(display_row, 4, modes[i]); 
+            }
+            redraw = 0;
+        }
+
+        if (S1_pressed()) {
+            current_selection = (current_selection + 1) % num_modes;
+            redraw = 1;
+            s_delay(); // Robust debounce for the race-day switches
+        }
+
+        if (S2_pressed()) {
+            s_delay();
+            OLED_display_clear();
+            return current_selection + 1; // Returns 1, 2, or 3
+        }
+    }
 }
