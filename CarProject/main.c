@@ -25,6 +25,7 @@ int main(void)
     DC_EN_init();
     motors_setup(); 
     UART0_init();
+		write_servo(config.steer.center_pwm); 
     float last_error = 0.0f;
     float filtered_center = 60.0f;
     const float alpha = 0.45f;
@@ -39,19 +40,27 @@ int main(void)
         // Process Raw Data
 			
         int raw_center = find_center_line(pixels);			
-				UART0_printDec(dark_pixel_count);
-				UART0_put("\n\r");
+				//UART0_printDec(raw_center);
+				//UART0_put("\n\r");
+			
+				if (is_carpet(pixels)) 
+        {
+            stop_motors(); 
+            write_servo(config.steer.center_pwm); 
+            Camera_clearDataReady();
+            continue; 
+        }
 				// Finish line stopping. TODO: test it. this works by checking how much black there is
-				if (dark_pixel_count < 60) {
-						stop_motors();
-						write_servo(config.steer.center_pwm);
-						
-						// Stay in this loop forever so the car doesn't move again
-						while(1) {
-								
-						}
-				}
-				
+//				if (dark_pixel_count < 60) {
+//						stop_motors();
+//						write_servo(config.steer.center_pwm);
+//						
+//						// Stay in this loop forever so the car doesn't move again
+//						while(1) {
+//								
+//						}
+//				}
+//				
 				
         
 				

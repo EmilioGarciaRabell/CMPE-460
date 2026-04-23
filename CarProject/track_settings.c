@@ -5,6 +5,7 @@
 #include "track_settings.h"
 #include "lab2/uart.h"
 #include "uart_extras.h"
+#include "config.h"
 
 /*The functions living under this module will manage any track settings, 
 	like finding the center and checking if the car is on the track*/
@@ -24,7 +25,7 @@ int find_center_line(uint16_t *in)
     // If the difference between the brightest and darkest pixel is small,
     // there is no line. Stop processing and return center.
     if ((mx - mn) < 150) { // Adjust '150' based on your sensor readings
-        return 73; 
+        return config.track.center_reference; 
     }
 
     uint16_t threshold = (uint16_t)(((uint32_t)mx + mn) / 2u);
@@ -44,7 +45,7 @@ int find_center_line(uint16_t *in)
 		
 		dark_pixel_count = temp_count;
 		
-    if (total_weight == 0) return 73;
+    if (total_weight == 0) return config.track.center_reference;
 		
     return (int)(weighted_sum / total_weight);
 }
@@ -59,9 +60,10 @@ int is_carpet(uint16_t *pixels)
 	{
 		sum += pixels[i];
 	}
-
+//	UART0_printDec(sum/128);
+//  UART0_put("\n\r");
 	// If the average is less than 500 then its on the carpet otherwise its not
-	if ((sum / 128) < 300)
+	if ((sum / 128) < 800)
 	{
 		return 1;
 	}
