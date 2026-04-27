@@ -1,172 +1,173 @@
- /**
+/**
  * ******************************************************************************
  * @file    : peripherals.c
- * @brief   : OLED display helper for line-scan camera data
- * @details : Replicates the MATLAB pipeline from plot_cameras_serial.m:
- *              1. Raw pixel data
- *              2. 5-point moving average (smoothData)
- *              3. Midpoint-threshold binary edge detection (edgeData)
- *            Each stage feeds draw_1d_data() / OLED_DisplayCameraData() so
- *            the result appears on the 128x64 OLED in real time.
+ * @brief   : OLED helper file that displays camera data and mode selection
+ * @details : Functions to initialize the OLED display, update it with camera data, and select the car mode at the start
  *
- * @author  Cristian Morataya & Emilio Garcia Rabell
+ * @author Cristian Morataya & Emilio Garcia Rabell
+ * @date 4/27/2026
  * ******************************************************************************
  */
 
 #include "peripherals.h"
-#include "oled.h"   /* adjust path to wherever oled.h lives in your tree */
+#include "oled.h"
 #include <string.h>
 #include <stdint.h>
 #include "lab5/switches.h"
-/* -- constants ---------------------------------------------------------------- */
-#define NUM_PIXELS     128
-#define ADC_MAX        0x3FFFu   /* 14-bit ADC ceiling used by draw_1d_data     */
-#define SMOOTH_WINDOW  5         /* must be odd; mirrors movmean(data, 5)        */
-// delay constant
+
+// Maximum ADC value for the camera
+#define ADC_MAX 0x3FFFu
+// Window size for the moving average filter
+#define SMOOTH_WINDOW 5
 #define DELAY_COUNT 2000000
 
-/* -- module state ------------------------------------------------------------- */
-static DisplayMode  s_mode          = DISPLAY_MODE_EDGE;   /* default: edge view */
-static uint16_t     s_smooth[NUM_PIXELS];
-static uint16_t     s_edge[NUM_PIXELS];
+// Variables for the state of the display
+static DisplayMode s_mode = DISPLAY_MODE_EDGE;
+static uint16_t s_smooth[128];
+static uint16_t s_edge[128];
 
-/* -- private helpers ----------------------------------------------------------- */
-
-/**
- * @brief  5-point symmetric moving average, matching MATLAB movmean(data,5).
- *         Edge pixels use a smaller window (same as MATLAB's default shrink).
- *
- * @param  in   Source array  (128 x uint16_t, raw ADC)
- * @param  out  Destination   (128 x uint16_t, smoothed)
- */
+// Function for a smoothing filter on the camera data
 static void smooth_data(const uint16_t *in, uint16_t *out)
 {
-    int half = SMOOTH_WINDOW / 2;   /* = 2 */
+    // Divide the window by 2
+    int half = SMOOTH_WINDOW / 2;
     int i, j;
-    for (i = 0; i < NUM_PIXELS; i++)
+
+    // Loop through the pixels and find the average of the pixels
+    for (i = 0; i < 128; i++)
     {
-        uint32_t sum   = 0;
-        int      count = 0;
+        uint32_t sum = 0;
+        int count = 0;
+        // Loop through the window and add the pixels to the sum
         for (j = i - half; j <= i + half; j++)
         {
-            if (j >= 0 && j < NUM_PIXELS)
+            if (j >= 0 && j < 128)
             {
                 sum += in[j];
                 count++;
             }
         }
+        // Output is the average of the pixels
         out[i] = (uint16_t)(sum / count);
     }
 }
 
-/**
- * @brief  Midpoint binary threshold — mirrors edgeData() in the .m file.
- *         Pixels above threshold ? ADC_MAX (logic 1), others ? 0 (logic 0).
- *         Output is scaled to the full ADC range so draw_1d_data() maps it
- *         correctly to the top/bottom of the 64-pixel OLED height.
- *
- * @param  in   Smoothed array  (128 x uint16_t)
- * @param  out  Binary array    (128 x uint16_t, values are 0 or ADC_MAX)
- */
+// Get the edge data with comparing to a threshold
 static void edge_data(const uint16_t *in, uint16_t *out)
 {
-    /* find min / max */
     uint16_t mn = in[0], mx = in[0];
     int i;
-    for (i = 1; i < NUM_PIXELS; i++)
+    // Loop through the pixels
+    for (i = 1; i < 128; i++)
     {
-        if (in[i] < mn) mn = in[i];
-        if (in[i] > mx) mx = in[i];
+        // If the pixel is less than the minimum then update the minimum
+        if (in[i] < mn)
+            mn = in[i];
+        if (in[i] > mx)
+            mx = in[i];
     }
+    // The threshold is the average of the minimum and maximum
     uint16_t threshold = (uint16_t)(((uint32_t)mx + mn) / 2u);
 
-    for (i = 0; i < NUM_PIXELS; i++)
+    // Loop through again and compare to the threshold
+    for (i = 0; i < 128; i++)
         out[i] = (in[i] > threshold) ? ADC_MAX : 0u;
 }
 
-/* -- public API --------------------------------------------------------------- */
-
+// Initialize the display and a message to show that the camera is ready
 void Display_init(void)
 {
     OLED_Init();
-    /* Optionally show a splash — comment out if you want a clean start */
     OLED_Print(1, 1, "Camera Ready");
 }
 
+// Function to update the display with the data from the camera
 void Display_update(const uint16_t *pixels, DisplayMode mode)
 {
+    // Get both the smoothed and edge data
     smooth_data(pixels, s_smooth);
     edge_data(s_smooth, s_edge);
 
+    // Depending on the mode display the corresponding data on the OLED
     switch (mode)
     {
-        case DISPLAY_MODE_RAW:
-            OLED_DisplayCameraData((uint16_t *)pixels);
-            break;
-        case DISPLAY_MODE_SMOOTH:
-            OLED_DisplayCameraData(s_smooth);
-            break;
-        case DISPLAY_MODE_EDGE:
-        default:
-            OLED_DisplayCameraData(s_edge);
-            break;
+    case DISPLAY_MODE_RAW:
+        OLED_DisplayCameraData((uint16_t *)pixels);
+        break;
+    case DISPLAY_MODE_SMOOTH:
+        OLED_DisplayCameraData(s_smooth);
+        break;
+    case DISPLAY_MODE_EDGE:
+    default:
+        OLED_DisplayCameraData(s_edge);
+        break;
     }
 }
 
-
-
+// Function to cycle through the display modes
 void Display_cycleMode(void)
 {
     s_mode = (DisplayMode)((s_mode + 1) % 3);
 }
 
+// Delay helper function
 void s_delay(void)
 {
     for (volatile long i = 0; i < DELAY_COUNT; i++)
         ;
 }
 
-
-int select_mode() {
-    OLED_Init(); // Ensure display is ready
+// Function to select the mode at the start of the car
+int select_mode()
+{
+    // Initialize the OLED and the switches
+    OLED_Init();
     S1_init();
     S2_init();
 
-    char *modes[] = { "PRO MODE", "MID MODE", "ECO MODE" };
+    // The different modes
+    char *modes[] = {"PRO MODE", "MID MODE", "ECO MODE"};
     int current_selection = 0;
     int num_modes = 3;
     int redraw = 1;
 
-    while(1) {
-        if (redraw) {
+    while (1)
+    {
+        if (redraw)
+        {
+            // Clear the display and print the mode selection menu
             OLED_display_clear();
-            
-            for (int i = 0; i < num_modes; i++) {
-                // ROW: Use i+1 because the library math is (x-1). 
-                // i=0 becomes row 1, i=1 becomes row 2, etc.
-                int display_row = i + 1; 
-                
-                if (i == current_selection) {
-                    // COL: Use 1 for the arrow (first character slot)
-                    OLED_Print(display_row, 1, "->"); 
+
+            // Print out the modes
+            for (int i = 0; i < num_modes; i++)
+            {
+                int display_row = i + 1;
+
+                if (i == current_selection)
+                {
+                    // Pointer to show what selection it is on
+                    OLED_Print(display_row, 1, "->");
                 }
-                
-                // COL: Use 4 for text (starts at the 4th character slot)
-                OLED_Print(display_row, 4, modes[i]); 
+
+                OLED_Print(display_row, 4, modes[i]);
             }
             redraw = 0;
         }
 
-        if (S1_pressed()) {
+        // If switch 1 is pressed then move the arrow down
+        if (S1_pressed())
+        {
             current_selection = (current_selection + 1) % num_modes;
             redraw = 1;
-            s_delay(); // Robust debounce for the race-day switches
+            s_delay();
         }
 
-        if (S2_pressed()) {
+        // If switch 2 is pressed then select the mode
+        if (S2_pressed())
+        {
             s_delay();
             OLED_display_clear();
-            return current_selection + 1; // Returns 1, 2, or 3
+            return current_selection + 1;
         }
     }
 }

@@ -5,7 +5,7 @@
  * @details : Camera initialization and configuration as well as functions to get the camera data
  *
  * @author Cristian Morataya & Emilio Garcia Rabell
- * @date 2/26/2026
+ * @date 4/26/2026
  * ******************************************************************************
  */
 
@@ -32,8 +32,8 @@ void Camera_init()
 	uint32_t TIMG0_Prescaler = 0;
 	uint32_t TIMG6_Prescaler = 255;
 	uint32_t TIMG0LoadValue = (SYSCTL_SYSCLK_getULPCLK() / 1 / (TIMG0_Prescaler + 1) / 100000) - 1;
-	// This will set the integration frequency to 800Hz (~1.25ms integration time)
-uint32_t TIMG6LoadValue = (SYSCTL_SYSCLK_getULPCLK() / 1 / (TIMG6_Prescaler + 1) / 600) - 1;
+	// Changed for the car, so the integration time is 1.6 ms, seemed to work the best for us, lowkey a random number
+	uint32_t TIMG6LoadValue = (SYSCTL_SYSCLK_getULPCLK() / 1 / (TIMG6_Prescaler + 1) / 600) - 1;
 
 	if ((GPIOA->GPRCM.PWREN & GPIO_PWREN_ENABLE_MASK) == 0)
 	{

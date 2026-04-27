@@ -1,45 +1,39 @@
 /**
  * ******************************************************************************
- * @file    : PERIPHERALS.h
- * @brief   : OLED display helper for line-scan camera data
- * @details : Mirrors the MATLAB pipeline: raw ? 5-pt smooth ? edge detection,
- *            then renders each stage to the OLED using draw_1d_data / OLED API.
+ * @file    : peripherals.h
+ * @brief   : OLED helper header file that displays camera data and mode selection
+ * @details : Functions to initialize the OLED display, update it with camera data, and select the car mode at the start
  *
- * @author  Cristian Morataya & Emilio Garcia Rabell
+ * @author Cristian Morataya & Emilio Garcia Rabell
+ * @date 4/27/2026
  * ******************************************************************************
  */
 
 #ifndef PERIPHERALS_H
 #define PERIPHERALS_H
-
 #include <stdint.h>
 
-/* Which view to render on the single OLED screen */
-typedef enum {
-    DISPLAY_MODE_RAW    = 0,   /* raw ADC values               */
-    DISPLAY_MODE_SMOOTH = 1,   /* 5-point moving average       */
-    DISPLAY_MODE_EDGE   = 2,   /* binary edge-detected output  */
+// Enum for the different display modes
+typedef enum
+{
+    DISPLAY_MODE_RAW = 0,
+    DISPLAY_MODE_SMOOTH = 1,
+    DISPLAY_MODE_EDGE = 2,
 } DisplayMode;
 
-/**
- * @brief  Initialise the OLED. Call once at startup before Display_update().
- */
+// Function to initialize the display
 void Display_init(void);
 
-/**
- * @brief  Process one camera frame and push it to the OLED.
- *
- * @param  pixels   Pointer to the 128-element ADC array from Camera_getData().
- * @param  mode     Which processing stage to show on the OLED.
- */
+// Function to update the display with the data from the camera
 void Display_update(const uint16_t *pixels, DisplayMode mode);
 
-/**
- * @brief  Cycle through RAW ? SMOOTH ? EDGE on each call.
- *         Convenient if you want to rotate views with a button press.
- */
+// Function to cycle through the display modes
 void Display_cycleMode(void);
 
+// Function to select the mode at the start of the car
 int select_mode(void);
+
+// Delay helper function
 void s_delay(void);
-#endif /* DISPLAY_H */
+
+#endif

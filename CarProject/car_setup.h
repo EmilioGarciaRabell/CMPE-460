@@ -1,20 +1,22 @@
+/**
+ * ******************************************************************************
+ * @file    : car_setup.h
+ * @brief   : Car setup module header file
+ * @details : Initialization and configuration of car settings
+ *
+ * @author Emilio Garcia Rabell & Cristian Morataya
+ * @date 4/26/2026
+ * ******************************************************************************
+ */
+
 #ifndef CAR_SETUP_H
 #define CAR_SETUP_H
 #include "config.h"
 #include <ti/devices/msp/msp.h>
 
-/**
- * @brief Initializes and enables the GPIO pins required for the DC Motor Drivers.
- * * This function performs the following steps:
- * 1. Checks if GPIOB and GPIOA power domains are enabled; if not, it resets 
- * and enables them.
- * 2. Configures the IOMUX for the specific Motor Enable (DC_EN) pins:
- * - Left Motor: GPIOB DIO19 (PINCM45)
- * - Right Motor: GPIOA DIO22 (PINCM47)
- * 3. Sets both pins as digital outputs.
- * 4. Sets the output high to enable the motor controllers.
- */
+// Initialize the DC EN pins to drive the motors
 void DC_EN_init(void);
 
+// Function to select the different modes for the car
 void mode_config(CarSettings *c, int mode);
-#endif /* CAR_SETUP_H */
+#endif 

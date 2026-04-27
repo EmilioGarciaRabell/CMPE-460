@@ -75,7 +75,8 @@ void I2C1_init(uint16_t targetAddress)
 void I2C1_putchar(unsigned char ch)
 {
 	// Wait until there is space in the FIFO
-	while (!((I2C1->MASTER.MFIFOSR & I2C_MFIFOSR_TXFIFOCNT_MASK) >= I2C_MFIFOSR_TXFIFOCNT_MINIMUM));
+	while (!((I2C1->MASTER.MFIFOSR & I2C_MFIFOSR_TXFIFOCNT_MASK) >= I2C_MFIFOSR_TXFIFOCNT_MINIMUM))
+		;
 
 	// Write the data to the FIFO
 	I2C1->MASTER.MTXDATA = ch;
@@ -104,7 +105,8 @@ void I2C1_put(unsigned char *data, uint16_t data_size)
 	}
 
 	// Wait until the transfer is done
-	while (!(I2C1->MASTER.MSR & I2C_MSR_IDLE_MASK));
+	while (!(I2C1->MASTER.MSR & I2C_MSR_IDLE_MASK))
+		;
 
 	// Disable the module after the transfer
 	I2C1->MASTER.MCTR &= ~(I2C_MCTR_MBLEN_MASK | I2C_MCTR_BURSTRUN_MASK);
